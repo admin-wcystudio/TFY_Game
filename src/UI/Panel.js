@@ -461,31 +461,44 @@ export class QuestionPanel extends Phaser.GameObjects.Container {
         this.selectedAnswerIndex = index;
     }
 
-    showDescription() {
+    showDialogList() {
+        const centerX = this.scene.cameras.main.width / 2;
+        const centerY = this.scene.cameras.main.height * 0.8;
+        this.dialogVideo = this.scene.add.video(centerX, 0, 'game6_win_video').setDepth(300).
+            setVisible(true).setScrollFactor(0);
+        this.dialogVideo.play(true);
+
         const q = this.questions[this.currentIndex];
-        const descriptionKey = q.detail;
+        if (q.dialoges && q.dialoges.length > 0) {
+            const dialogKeys = q.dialoges;
+            let dialogIndex = 0;
 
-        console.log('Showing description for question:', descriptionKey);
+            const dialogImage = this.scene.add.image(centerX, centerY, dialogKeys[dialogIndex])
+                .setDepth(300).setInteractive({ useHandCursor: true }).setVisible(true);
 
-        this.descriptionPanel = new CustomPanel(this.scene, 960, 540, [{
-            content: descriptionKey,
-            closeBtn: 'close_btn',
-            closeBtnClick: 'close_btn_click'
-        }]);
-        this.descriptionPanel.setDepth(2000).setVisible(true);
-        this.descriptionPanel.setCloseCallBack(() => {
-            this.descriptionPanel.destroy();
-            this.descriptionPanel = null;
+            const advance = () => {
+                dialogIndex++;
+                if (dialogIndex < dialogKeys.length) {
+                    dialogImage.setTexture(dialogKeys[dialogIndex]);
+                } else {
+                    dialogImage.destroy();
+                    this.nextQuestion();
+                }
+            };
+
+            dialogImage.on('pointerdown', advance);
+        } else {
             this.nextQuestion();
-        });
+        }
     }
+
 
     checkAnswer() {
         const q = this.questions[this.currentIndex];
 
         console.log(`Selected: ${this.selectedAnswerIndex}, Correct: ${q.answer}`);
         if (this.selectedAnswerIndex === q.answer) {
-            this.showDescription();
+            this.showDialogList();
         } else {
             console.log("答錯了 , correct : " + q.answer);
             this.scene.updateRoundUI(false);
@@ -499,6 +512,7 @@ export class QuestionPanel extends Phaser.GameObjects.Container {
         this.scene.roundIndex++;
         this.currentIndex++;
         if (this.currentIndex < this.questions.length) {
+            this.dialogVideo.setVisible(false);
             this.confirmBtn.setVisible(true);
             this.selectedAnswerIndex = -1;
             this.showQuestion();

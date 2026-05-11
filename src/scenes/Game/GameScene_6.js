@@ -10,23 +10,46 @@ export class GameScene_6 extends BaseGameScene {
     }
 
     preload() {
-
+        this.load.audio('bgm', 'assets/music/bgm.mp3');
         const path = 'assets/images/Game_6/';
-        // NPC dialogue boxes (in ascending order)
-        this.load.image('game6_npc_mainstreet_fail_01', `${path}game6_npc_box1.png`);
-        this.load.image('game6_npc_mainstreet_fail_02', `${path}game6_npc_box2.png`);
-        this.load.image('game6_npc_mainstreet', `${path}game6_npc_box3.png`);
 
-        this.load.image('game6_npc_box_tryagain', `${path}game6_npc_box4.png`);
-        this.load.image('game6_npc_box_win', `${path}game6_npc_box5.png`);
+
+        this.gender = 'F';
+        if (localStorage.getItem('player')) {
+            this.gender = JSON.parse(localStorage.getItem('player')).gender;
+        }
+        if (this.gender === 'M') {
+            this.load.image('game6_bg', `${path}game6_bg_boy.png`);
+            this.load.video('game6_win_video', path + 'game6_bg_boy.mp4');
+            this.load.image('game6_npc_q1_char_win', `${path}game6_npc_box2_boy.png`);
+            this.load.image('game6_npc_q2_char_win', `${path}game6_npc_box4_boy.png`);
+            this.load.image('game6_npc_q3_char_win', `${path}game6_npc_box6_boy.png`);
+            this.load.image('game6_npc_char_win', `${path}game6_npc_box7_boy.png`);
+
+        } else {
+            this.load.image('game6_bg', `${path}game6_bg_girl.png`);
+            this.load.video('game6_win_video', path + 'game6_bg_girl.mp4');
+            this.load.image('game6_npc_q1_char_win', `${path}game6_npc_box2_girl.png`);
+            this.load.image('game6_npc_q2_char_win', `${path}game6_npc_box4_girl.png`);
+            this.load.image('game6_npc_q3_char_win', `${path}game6_npc_box6_girl.png`);
+            this.load.image('game6_npc_char_win', `${path}game6_npc_box7_girl.png`);
+
+        }
+
+        // NPC dialogue boxes (in ascending order)
+        this.load.image('game6_npc_q1_npc_win', `${path}game6_npc_box1.png`);
+        this.load.image('game6_npc_q2_npc_win', `${path}game6_npc_box3.png`);
+        this.load.image('game6_npc_q3_npc_win', `${path}game6_npc_box5.png`);
+        this.load.image('game6_npc_win', `${path}game6_npc_box8.png`);
+
+        this.load.image('game6_npc_box_tryagain', `${path}game6_npc_box9.png`);
 
         // UI buttons
         this.load.image('confirm_button', `${path}game6_confirm_button.png`);
         this.load.image('confirm_button_select', `${path}game6_confirm_button_select.png`);
 
-        for (let i = 1; i <= 5; i++) {
-            this.load.image(`game6_q${i}`, `${path}game6_q${i}_box.png`);
-            this.load.image(`game6_q${i}_description`, `${path}game6_q${i}_description.png`);
+        for (let i = 1; i <= 3; i++) {
+            this.load.image(`game6_q${i}`, `${path}game6_q${i}.png`);
             this.load.image(`game6_q${i}_a_button`, `${path}game6_q${i}_a_button.png`);
             this.load.image(`game6_q${i}_b_button`, `${path}game6_q${i}_b_button.png`);
             this.load.image(`game6_q${i}_c_button`, `${path}game6_q${i}_c_button.png`);
@@ -37,12 +60,14 @@ export class GameScene_6 extends BaseGameScene {
             this.load.image(`game6_q${i}_d_button_select`, `${path}game6_q${i}_d_button_select.png`);
         }
 
-        for (let i = 1; i <= 3; i++) {
-            this.load.image(`game6_q${i}_title`, `${path}game6_q${i}_title.png`);
-        }
     }
 
     create() {
+
+        if (this.sound.getAll('bgm').length === 0) {
+            this.sound.play('bgm', { loop: true, volume: 0.5 });
+        }
+
         // Pass null for bgKey since using video background
         this.initGame('game6_bg', 'game6_description', true, false, {
             targetRounds: 3,
@@ -63,42 +88,33 @@ export class GameScene_6 extends BaseGameScene {
             {
                 content: 'game6_q1',
                 options: ['game6_q1_a_button', 'game6_q1_b_button', 'game6_q1_c_button', 'game6_q1_d_button'],
-                answer: 2,
-                detail: 'game6_q1_description'
+                answer: 0,
+                dialoges: [
+                    'game6_npc_q1_npc_win', 'game6_npc_q1_char_win'
+                ]
             },
             {
                 content: 'game6_q2',
                 options: ['game6_q2_a_button', 'game6_q2_b_button', 'game6_q2_c_button', 'game6_q2_d_button'],
-                answer: 0,
-                detail: 'game6_q2_description'
+                answer: 3,
+                dialoges: [
+                    'game6_npc_q2_npc_win', 'game6_npc_q2_char_win'
+                ]
+
             },
             {
                 content: 'game6_q3',
                 options: ['game6_q3_a_button', 'game6_q3_b_button', 'game6_q3_c_button', 'game6_q3_d_button'],
-                answer: 2,
-                detail: 'game6_q3_description'
-            },
-            {
-                content: 'game6_q4',
-                options: ['game6_q4_a_button', 'game6_q4_b_button', 'game6_q4_c_button', 'game6_q4_d_button'],
                 answer: 1,
-                detail: 'game6_q4_description'
-            },
-            {
-                content: 'game6_q5',
-                options: ['game6_q5_a_button', 'game6_q5_b_button', 'game6_q5_c_button', 'game6_q5_d_button'],
-                answer: 2,
-                detail: 'game6_q5_description'
+                dialoges: [
+                    'game6_npc_q3_npc_win', 'game6_npc_q3_char_win',
+                    'game6_npc_char_win', 'game6_npc_win'
+                ]
             }
         ];
 
-        // Shuffle all questions using Phaser's built-in shuffle
-        Phaser.Utils.Array.Shuffle(allQuestions);
 
-        // Select the first three questions after shuffling
-        const selectedQuestions = allQuestions.slice(0, 3);
-
-        this.questionPanel = new QuestionPanel(this, selectedQuestions, () => {
+        this.questionPanel = new QuestionPanel(this, allQuestions, () => {
         });
         this.questionPanel.setDepth(559).setVisible(false);
     }
@@ -131,14 +147,16 @@ export class GameScene_6 extends BaseGameScene {
         }]);
         objectPanel.setDepth(1000);
         objectPanel.show();
-        objectPanel.setCloseCallBack(() => GameManager.backToMainStreet(this));
+        objectPanel.setCloseCallBack(
+            //  () => GameManager.backToMainStreet(this)
+        );
     }
 
 
     onRoundWin() {
         if (!this.isGameActive || this.gameState === 'gameWin') return;
 
-        let isFinalWin = (this.roundIndex + 1 >= this.targetRounds) || this.isAllowRoundFail;
+        let isFinalWin = (this.roundIndex + 1 >= this.targetRounds);
         this.gameState = isFinalWin ? 'gameWin' : 'roundWin';
 
         if (isFinalWin) {
@@ -147,7 +165,7 @@ export class GameScene_6 extends BaseGameScene {
             this.enableGameInteraction(false);
 
             this.showFeedbackLabel(true);
-            this.showBubble('win');
+            this.showBubble('noBubble');
         }
         this.updateRoundUI(true);
 

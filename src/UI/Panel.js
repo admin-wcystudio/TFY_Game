@@ -431,10 +431,8 @@ export class QuestionPanel extends Phaser.GameObjects.Container {
 
         const options = q.options || q.option; // Support both 'options' and 'option'
         options.forEach((optKey, index) => {
-            const col = index % 2;
-            const row = Math.floor(index / 2);
-            const x = col === 0 ? -260 : 260;
-            const y = row === 0 ? 100 : 260;
+            const x = 0;
+            const y = -100 + index * 120;
             const btn = new CustomButton(this.scene, x, y, optKey, `${optKey}_select`,
                 () => {
                     console.log(`${optKey}_select`);
@@ -464,17 +462,18 @@ export class QuestionPanel extends Phaser.GameObjects.Container {
     showDialogList() {
         const centerX = this.scene.cameras.main.width / 2;
         const centerY = this.scene.cameras.main.height * 0.8;
-        this.dialogVideo = this.scene.add.video(centerX, 0, 'game6_win_video').setDepth(300).
+        this.dialogVideo = this.scene.add.video(centerX, 540, 'game6_talk_video').setDepth(800).
             setVisible(true).setScrollFactor(0);
         this.dialogVideo.play(true);
 
         const q = this.questions[this.currentIndex];
         if (q.dialoges && q.dialoges.length > 0) {
             const dialogKeys = q.dialoges;
+            console.log('Dialog keys:', dialogKeys);
             let dialogIndex = 0;
 
             const dialogImage = this.scene.add.image(centerX, centerY, dialogKeys[dialogIndex])
-                .setDepth(300).setInteractive({ useHandCursor: true }).setVisible(true);
+                .setDepth(801).setInteractive({ useHandCursor: true }).setVisible(true);
 
             const advance = () => {
                 dialogIndex++;
@@ -495,16 +494,36 @@ export class QuestionPanel extends Phaser.GameObjects.Container {
 
     checkAnswer() {
         const q = this.questions[this.currentIndex];
+        const centerX = this.scene.cameras.main.width / 2;
 
         console.log(`Selected: ${this.selectedAnswerIndex}, Correct: ${q.answer}`);
         if (this.selectedAnswerIndex === q.answer) {
+            // Stop timer and hide panel while showing dialog
+            if (this.scene.gameTimer) this.scene.gameTimer.stop();
+            this.setVisible(false);
             this.showDialogList();
         } else {
             console.log("答錯了 , correct : " + q.answer);
             this.scene.updateRoundUI(false);
             this.setVisible(false);
+            if (!this.dialogVideo) {
+                const centerX = this.scene.cameras.main.width / 2;
+                this.dialogVideo = this.scene.add.video(centerX, 540, 'game6_talk_video')
+                    .setDepth(800).setScrollFactor(0);
+                this.dialogVideo.play(true);
+            }
+            this.dialogVideo.setVisible(true);
             this.scene.handleLose();
+
         }
+    }
+
+    destroy() {
+        if (this.dialogVideo) {
+            this.dialogVideo.destroy();
+            this.dialogVideo = null;
+        }
+        super.destroy();
     }
 
     nextQuestion() {
@@ -512,16 +531,18 @@ export class QuestionPanel extends Phaser.GameObjects.Container {
         this.scene.roundIndex++;
         this.currentIndex++;
         if (this.currentIndex < this.questions.length) {
-            this.dialogVideo.setVisible(false);
+            if (this.dialogVideo) this.dialogVideo.setVisible(false);
+            this.setVisible(true);
             this.confirmBtn.setVisible(true);
             this.selectedAnswerIndex = -1;
+            if (this.scene.gameTimer) this.scene.gameTimer.start();
             this.showQuestion();
         } else {
+            this.scene.onRoundWin();
+            this.dialogVideo.setVisible(true);
             console.log('All questions answered correctly!');
-            this.destroy(); // 3 題都答完了
-
+            this.destroy();
         }
-
     }
 }
 

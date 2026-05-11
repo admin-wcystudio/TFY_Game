@@ -49,7 +49,7 @@ export class GameScene_1 extends BaseGameScene {
             isContinuousTimer: false,
             sceneIndex: 1
         });
-        //this.gameUI.descriptionPanel.setVisible(false);
+        this.gameUI.itemBtn.setVisible(false);
 
         // Create confirm button
         this.confirmBtn = new CustomButton(this, this.centerX, this.height - 100,

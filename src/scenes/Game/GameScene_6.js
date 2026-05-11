@@ -20,7 +20,7 @@ export class GameScene_6 extends BaseGameScene {
         }
         if (this.gender === 'M') {
             this.load.image('game6_bg', `${path}game6_bg_boy.png`);
-            this.load.video('game6_win_video', path + 'game6_bg_boy.mp4');
+            this.load.video('game6_talk_video', path + 'game6_bg_boy.mp4');
             this.load.image('game6_npc_q1_char_win', `${path}game6_npc_box2_boy.png`);
             this.load.image('game6_npc_q2_char_win', `${path}game6_npc_box4_boy.png`);
             this.load.image('game6_npc_q3_char_win', `${path}game6_npc_box6_boy.png`);
@@ -28,7 +28,7 @@ export class GameScene_6 extends BaseGameScene {
 
         } else {
             this.load.image('game6_bg', `${path}game6_bg_girl.png`);
-            this.load.video('game6_win_video', path + 'game6_bg_girl.mp4');
+            this.load.video('game6_talk_video', path + 'game6_bg_girl.mp4');
             this.load.image('game6_npc_q1_char_win', `${path}game6_npc_box2_girl.png`);
             this.load.image('game6_npc_q2_char_win', `${path}game6_npc_box4_girl.png`);
             this.load.image('game6_npc_q3_char_win', `${path}game6_npc_box6_girl.png`);
@@ -76,6 +76,9 @@ export class GameScene_6 extends BaseGameScene {
             isContinuousTimer: true,
             sceneIndex: 6
         });
+
+        this.gameUI.itemBtn.setVisible(false);
+
     }
 
     setupGameObjects() {
@@ -130,9 +133,15 @@ export class GameScene_6 extends BaseGameScene {
             this.questionPanel.destroy();
         }
 
+        if (this.dialogVideo) {
+            this.dialogVideo.destroy();
+            this.dialogVideo = null;
+        }
+
         this.setupGameObjects(); // 重新抽題並建立 Panel
         this.questionPanel.setVisible(true);
     }
+
 
     showWin() {
         this.questionPanel.setVisible(false);
@@ -145,11 +154,9 @@ export class GameScene_6 extends BaseGameScene {
             closeBtn: 'close_btn',
             closeBtnClick: 'close_btn_click'
         }]);
-        objectPanel.setDepth(1000);
+        objectPanel.closeBtn.setVisible(false); // 先隱藏關閉按鈕
+        objectPanel.setDepth(802);
         objectPanel.show();
-        objectPanel.setCloseCallBack(
-            //  () => GameManager.backToMainStreet(this)
-        );
     }
 
 
@@ -170,4 +177,16 @@ export class GameScene_6 extends BaseGameScene {
         this.updateRoundUI(true);
 
     }
+
+    showFailPanel() {
+        // 確保這是在所有東西的最上層
+        const popupPanel = new CustomFailPanel(this, 960, 540, () => {
+            popupPanel.destroy();
+            this.restartGame(); // 重新開始整個遊戲
+        }, () => {
+            //GameManager.backToMainStreet(this);
+        });
+        popupPanel.setDepth(1000);
+    }
+
 }

@@ -9,6 +9,7 @@ export class GameScene_1 extends BaseGameScene {
         super('GameScene_1');
     }
     preload() {
+        this.load.audio('bgm', 'assets/music/bgm.mp3');
         const path = 'assets/images/Game_1/';
         this.load.image('confirm_button', `${path}game1_confirm_button.png`);
         this.load.image('confirm_button_select', `${path}game1_confirm_button_select.png`);
@@ -31,6 +32,10 @@ export class GameScene_1 extends BaseGameScene {
 
     create() {
 
+        if (this.sound.getAll('bgm').length === 0) {
+            this.sound.play('bgm', { loop: true, volume: 0.5 });
+        }
+
         this.width = this.cameras.main.width;
         this.height = this.cameras.main.height;
         this.centerX = this.width / 2;
@@ -42,9 +47,9 @@ export class GameScene_1 extends BaseGameScene {
             roundPerSeconds: 120,
             isAllowRoundFail: false,
             isContinuousTimer: false,
-            sceneIndex: 6
+            sceneIndex: 1
         });
-        this.gameUI.descriptionPanel.setVisible(false);
+        //this.gameUI.descriptionPanel.setVisible(false);
 
         // Create confirm button
         this.confirmBtn = new CustomButton(this, this.centerX, this.height - 100,
@@ -52,41 +57,62 @@ export class GameScene_1 extends BaseGameScene {
                 this.checkAnswer();
             });
 
-        this.confirmBtn.setDepth(600).setVisible(false);
+        this.confirmBtn.setDepth(600).setVisible(true);
     }
 
     setupGameObjects() {
-        this.border1 = this.add.image(this.centerX - 500, this.centerY, 'game1_border1').setDepth(500).setVisible(true);
-        this.border2 = this.add.image(this.centerX, this.centerY, 'game1_border2').setDepth(500).setVisible(true);
+        this.border1 = this.add.image(this.centerX - 350, this.centerY + 50, 'game1_border1').setDepth(500).setVisible(true);
+        this.border2 = this.add.image(this.centerX + 350, this.centerY + 50, 'game1_border2').setDepth(500).setVisible(true);
 
         // Track which object is at each position
         this.positionObjects = {};
 
-        // Border 1 (left) - 3 positions
-        this.snapPositions = [
-            // Border 1 positions
-            { x: this.centerX - 400, y: this.centerY, isOccupied: false },
-            // // Border 3 positions
-            { x: this.centerX + 400, y: this.centerY, isOccupied: false },
+        // Snap positions inside borders: indices 0-5 = border1 (2 cols x 3 rows), indices 6-11 = border2
+        const b1x = this.centerX - 350;
+        const b2x = this.centerX + 350;
+        const by = this.centerY + 50;
+        const colOffset = 130;
+        const rowOffsets = [-120, 0, 120];
 
-        ];
+        this.snapPositions = [];
+        for (const ry of rowOffsets) {
+            this.snapPositions.push({ x: b1x - colOffset, y: by + ry, isOccupied: false, border: 1 });
+            this.snapPositions.push({ x: b1x + colOffset, y: by + ry, isOccupied: false, border: 1 });
+        }
+        for (const ry of rowOffsets) {
+            this.snapPositions.push({ x: b2x - colOffset, y: by + ry, isOccupied: false, border: 2 });
+            this.snapPositions.push({ x: b2x + colOffset, y: by + ry, isOccupied: false, border: 2 });
+        }
 
         this.snapRadius = 80; // Distance threshold for snapping
 
+        // 12 spawn positions: 6 on the left side, 6 on the right side
         const spawnPositions = [
-            { x: this.centerX - 500, y: this.centerY + 300 },
-            { x: this.centerX, y: this.centerY + 300 },
-            { x: this.centerX + 500, y: this.centerY + 300 }
+            // Left side (below border1) - 3 cols x 2 rows
+            { x: this.centerX - 800, y: this.centerY - 220 },
+            { x: this.centerX - 800, y: this.centerY - 100 },
+            { x: this.centerX - 800, y: this.centerY + 20 },
+            { x: this.centerX - 800, y: this.centerY + 140 },
+            { x: this.centerX - 800, y: this.centerY + 260 },
+            { x: this.centerX - 800, y: this.centerY + 380 },
+            // Right side (below border2) - 3 cols x 2 rows
+            { x: this.centerX + 800, y: this.centerY - 220 },
+            { x: this.centerX + 800, y: this.centerY - 100 },
+            { x: this.centerX + 800, y: this.centerY + 20 },
+            { x: this.centerX + 800, y: this.centerY + 140 },
+            { x: this.centerX + 800, y: this.centerY + 260 },
+            { x: this.centerX + 800, y: this.centerY + 380 },
         ];
 
 
 
-        const shuffledPositions = Phaser.Utils.Array.Shuffle([...spawnPositions]);
+        // Shuffle all 12 spawn positions together
+        const shuffled = Phaser.Utils.Array.Shuffle([...spawnPositions]);
 
         this.objects = [];
-        for (let i = 1; i <= 3; i++) {
-            const pos = shuffledPositions[i - 1];
-            const obj = this.add.image(pos.x, pos.y, `game1_object${i}`)
+        for (let i = 1; i <= 6; i++) {
+            const pos = shuffled[i - 1];
+            const obj = this.add.image(pos.x, pos.y, `game1_arcadia_object${i}`)
                 .setDepth(505)
                 .setInteractive({ draggable: true })
                 .setVisible(true);
@@ -97,6 +123,22 @@ export class GameScene_1 extends BaseGameScene {
 
             this.objects.push(obj);
         }
+
+        for (let i = 1; i <= 6; i++) {
+            const pos = shuffled[i + 5];
+            const obj = this.add.image(pos.x, pos.y, `game1_outsideworld_object${i}`)
+                .setDepth(505)
+                .setInteractive({ draggable: true })
+                .setVisible(true);
+
+            obj.objectId = i + 6;
+            obj.originalX = pos.x;
+            obj.originalY = pos.y;
+
+            this.objects.push(obj);
+        }
+
+
         this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
             gameObject.x = dragX;
             gameObject.y = dragY;
@@ -123,9 +165,11 @@ export class GameScene_1 extends BaseGameScene {
             }
         });
 
-        this.border1_correctObjects = [2];
-        this.border2_correctObjects = [1];
-        this.border3_correctObjects = [3];
+        // Border 1: all arcadia objects (1-6), Border 2: all outsideworld objects (7-12)
+        this.border1_correctObjects = [1, 2, 3, 4, 5, 6];
+        this.border2_correctObjects = [7, 8, 9, 10, 11, 12];
+
+        //this.drawDebug();
     }
 
 
@@ -170,7 +214,7 @@ export class GameScene_1 extends BaseGameScene {
     }
 
     checkIfAllOccupied() {
-        const allPositions = [0, 1, 2];
+        const allPositions = Array.from({ length: 12 }, (_, i) => i);
         const allOccupied = allPositions.every(i => this.positionObjects.hasOwnProperty(i));
 
         if (allOccupied) {
@@ -181,6 +225,8 @@ export class GameScene_1 extends BaseGameScene {
     }
 
     enableGameInteraction(enable) {
+        this.border1.setVisible(enable);
+        this.border2.setVisible(enable);
         this.objects.forEach((obj, index) => {
             obj.setVisible(enable);
             obj.setInteractive(enable);
@@ -198,10 +244,10 @@ export class GameScene_1 extends BaseGameScene {
         console.log('[ANSWER] Checking answer...');
 
 
-        const border1Positions = [0];
+        const border1Positions = [0, 1, 2, 3, 4, 5];
         const border1Objects = border1Positions.map(i => this.positionObjects[i]).filter(id => id !== undefined);
 
-        const border2Positions = [1];
+        const border2Positions = [6, 7, 8, 9, 10, 11];
         const border2Objects = border2Positions.map(i => this.positionObjects[i]).filter(id => id !== undefined);
 
 
@@ -214,7 +260,7 @@ export class GameScene_1 extends BaseGameScene {
             border2Objects.length === this.border2_correctObjects.length;
 
 
-        if (border1Correct && border2Correct && border3Correct) {
+        if (border1Correct && border2Correct) {
             console.log('[ANSWER] ✓ All objects correctly placed in all borders!');
             this.onRoundWin();
 
@@ -262,27 +308,12 @@ export class GameScene_1 extends BaseGameScene {
         this.nextDialog.setInteractive({ useHandCursor: true });
         this.nextDialog.once('pointerdown', () => {
             this.nextDialog.destroy();
-            this.showDescriptionPanel();
+            this.showObjectPanel();
         });
     }
 
 
-    showDescriptionPanel() {
-        console.log('[DESCRIPTION] Showing success description panel');
-        const descriptionPanel = new CustomPanel(this, 960, 540, [
-            { content: 'game1_success_description1' },
-            { content: 'game1_success_description2' }
-        ]);
 
-        descriptionPanel.setDepth(1000);
-        descriptionPanel.show();
-        descriptionPanel.setNextButtonPosition(100, 0);
-        descriptionPanel.setCloseCallBack
-            (() => {
-                descriptionPanel.destroy();
-                this.showObjectPanel();
-            });
-    }
 
     showObjectPanel() {
         const objectPanel = new CustomPanel(this, 960, 600, [{
@@ -293,20 +324,31 @@ export class GameScene_1 extends BaseGameScene {
         objectPanel.setDepth(1000);
         objectPanel.show();
         objectPanel.setCloseCallBack(() => {
-            GameManager.switchToGameScene(this, 'GameScene_7');
+            //GameManager.backToMainStreet(this);
         });
     }
 
 
     drawDebug() {
         this.debugGraphics = this.add.graphics();
-        this.debugGraphics.lineStyle(2, 0xff0000, 0.5);
-        this.debugGraphics.fillStyle(0xff0000, 0.2);
-        this.snapPositions.forEach(pos => {
-            this.debugGraphics.strokeCircle(pos.x, pos.y, 80); // Draw outer circle
-            this.debugGraphics.fillCircle(pos.x, pos.y, 5); // Draw center point
-        });
-        this.debugGraphics.setDepth(999); // Just below borders
+        this.debugGraphics.setDepth(1000);
 
+        this.snapPositions.forEach((pos, index) => {
+            const color = pos.border === 1 ? 0x00ccff : 0xff6600;
+
+            // Snap radius circle
+            this.debugGraphics.lineStyle(2, color, 0.8);
+            this.debugGraphics.strokeCircle(pos.x, pos.y, this.snapRadius);
+
+            // Center dot
+            this.debugGraphics.fillStyle(color, 1);
+            this.debugGraphics.fillCircle(pos.x, pos.y, 5);
+
+            // Index + border label
+            this.add.text(pos.x, pos.y - this.snapRadius - 12,
+                `#${index} B${pos.border}`,
+                { fontSize: '14px', fill: '#ffffff', stroke: '#000000', strokeThickness: 3 }
+            ).setOrigin(0.5, 1).setDepth(1001);
+        });
     }
 }

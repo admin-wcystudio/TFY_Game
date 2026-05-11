@@ -3,221 +3,285 @@ import { CustomButton } from '../../UI/Button.js';
 import { CustomPanel, CustomFailPanel } from '../../UI/Panel.js';
 import GameManager from '../GameManager.js';
 
+
 export class GameScene_1 extends BaseGameScene {
     constructor() {
         super('GameScene_1');
     }
     preload() {
         const path = 'assets/images/Game_1/';
+        this.load.image('confirm_button', `${path}game1_confirm_button.png`);
+        this.load.image('confirm_button_select', `${path}game1_confirm_button_select.png`);
+
+        this.load.image('game1_npc_box_mainstreet_01', `${path}game1_npc_box1.png`);
+        this.load.image('game1_npc_box_win', `${path}game1_npc_box2.png`);
+        this.load.image('game1_npc_box_win_02', `${path}game1_npc_box3.png`);
+        this.load.image('game1_npc_box_tryagain', `${path}game1_npc_box4.png`);
+
+
+        for (let i = 1; i <= 6; i++) {
+            this.load.image(`game1_arcadia_object${i}`, `${path}game1_arcadia_object${i}.png`);
+            this.load.image(`game1_outsideworld_object${i}`, `${path}game1_outsideworld_object${i}.png`);
+        }
+
+        this.load.image('game1_border1', `${path}game1_border1.png`);
+        this.load.image('game1_border2', `${path}game1_border2.png`);
+
+    }
+
+    create() {
 
         this.width = this.cameras.main.width;
         this.height = this.cameras.main.height;
         this.centerX = this.width / 2;
         this.centerY = this.height / 2;
+        this.isPlayedSound = false;
 
-        this.load.image('game1_npc_box_mainstreet', `${path}game1_npc_box1.png`);
-        this.load.image('game1_npc_box_win', `${path}game1_npc_box2.png`);
-        this.load.image('game1_npc_box_tryagain', `${path}game1_npc_box3.png`);
-        this.load.image('game1_rotate', `${path}game1_rotate.png`);
-        this.load.image('game1_object_description', `${path}game1_object_description.png`);
-
-        this.load.image('game1_puzzle_guide', `${path}game1_puzzle_guide.png`);
-
-        for (let i = 1; i <= 6; i++) {
-            this.load.image(`game1_puzzle${i}`, `${path}game1_puzzle${i}.png`);
-        }
-
-        this.gender = 'F';
-        if (localStorage.getItem('player')) {
-            this.gender = JSON.parse(localStorage.getItem('player')).gender;
-        }
-
-        this.load.spritesheet('game1_success_preview',
-            `${path}game1_success_preview.png`, {
-            frameWidth: 248,
-            frameHeight: 350.5
-        });
-
-    }
-
-    create() {
         this.initGame('game1_bg', 'game1_description', true, false, {
             targetRounds: 1,
-            roundPerSeconds: 60,
+            roundPerSeconds: 120,
             isAllowRoundFail: false,
-            isContinuousTimer: true,
-            sceneIndex: 1
+            isContinuousTimer: false,
+            sceneIndex: 6
         });
-        this.anims.create({
-            key: 'success_preview_anim',
-            frames: this.anims.generateFrameNumbers('game1_success_preview', { start: 0, end: 48 }),
-            framerate: 30,
-            repeat: -1
-        });
+        this.gameUI.descriptionPanel.setVisible(false);
 
+        // Create confirm button
+        this.confirmBtn = new CustomButton(this, this.centerX, this.height - 100,
+            'confirm_button', 'confirm_button_select', () => {
+                this.checkAnswer();
+            });
+
+        this.confirmBtn.setDepth(600).setVisible(false);
     }
+
     setupGameObjects() {
-        this.selectedPuzzle = null;
+        this.border1 = this.add.image(this.centerX - 500, this.centerY, 'game1_border1').setDepth(500).setVisible(true);
+        this.border2 = this.add.image(this.centerX, this.centerY, 'game1_border2').setDepth(500).setVisible(true);
 
-        if (this.guide) this.guide.destroy();
-        if (this.rotateButton) this.rotateButton.destroy();
-        this.input.removeAllListeners('drag');
-        this.input.removeAllListeners('dragend');
+        // Track which object is at each position
+        this.positionObjects = {};
 
-        const centerX = this.cameras.main.width / 2;
-        const width = this.cameras.main.width;
-        const height = this.cameras.main.height;
+        // Border 1 (left) - 3 positions
+        this.snapPositions = [
+            // Border 1 positions
+            { x: this.centerX - 400, y: this.centerY, isOccupied: false },
+            // // Border 3 positions
+            { x: this.centerX + 400, y: this.centerY, isOccupied: false },
 
-        const defaultPuzzles = [
-            { content: 'game1_puzzle1', targetX: centerX - 100, targetY: 260 },
-            { content: 'game1_puzzle2', targetX: centerX + 100, targetY: 260 },
-            { content: 'game1_puzzle3', targetX: centerX - 100, targetY: 460 },
-            { content: 'game1_puzzle4', targetX: centerX + 100, targetY: 460 },
-            { content: 'game1_puzzle5', targetX: centerX - 100, targetY: 660 },
-            { content: 'game1_puzzle6', targetX: centerX + 100, targetY: 660 }
         ];
 
-        this.puzzleGroup = this.add.group();
+        this.snapRadius = 80; // Distance threshold for snapping
+
+        const spawnPositions = [
+            { x: this.centerX - 500, y: this.centerY + 300 },
+            { x: this.centerX, y: this.centerY + 300 },
+            { x: this.centerX + 500, y: this.centerY + 300 }
+        ];
 
 
-        this.guide = this.add.image(centerX, 460, 'game1_puzzle_guide').setDepth(10);
 
-        defaultPuzzles.forEach(data => {
-            let piece = this.add.image(0, 0, data.content).setDepth(50);
-            piece.setData({ targetX: data.targetX, targetY: data.targetY, isCorrect: false });
-            piece.on('pointerdown', () => this.selectPuzzle(piece));
-            this.puzzleGroup.add(piece);
-        });
+        const shuffledPositions = Phaser.Utils.Array.Shuffle([...spawnPositions]);
 
-        this.randomPuzzlePosition(this.puzzleGroup.getChildren());
+        this.objects = [];
+        for (let i = 1; i <= 3; i++) {
+            const pos = shuffledPositions[i - 1];
+            const obj = this.add.image(pos.x, pos.y, `game1_object${i}`)
+                .setDepth(505)
+                .setInteractive({ draggable: true })
+                .setVisible(true);
 
-        // 旋轉按鈕
-        this.rotateButton = new CustomButton(this, width - 200, height - 200, 'game1_rotate', null, () => {
-            if (this.selectedPuzzle) this.selectedPuzzle.angle += 90;
-        }).setDepth(100);
+            obj.objectId = i;
+            obj.originalX = pos.x;
+            obj.originalY = pos.y;
 
-        // 拖拽事件 (搬移到這裡確保只設定一次)
+            this.objects.push(obj);
+        }
         this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
-            if (this.selectedPuzzle !== gameObject) this.selectPuzzle(gameObject);
-            gameObject.setPosition(dragX, dragY).setDepth(100);
+            gameObject.x = dragX;
+            gameObject.y = dragY;
         });
 
+        // Add dragend event for snapping
         this.input.on('dragend', (pointer, gameObject) => {
-            gameObject.setDepth(50);
-            this.checkSnap(gameObject);
-        });
-
-
-        //==== Debug Graphics ===========================================================
-        // const debugGraphics = this.add.graphics().setDepth(2); // 擺喺背景上面，物件下面
-        // debugGraphics.lineStyle(3, 0xff0000, 1); // 紅色線，粗度 2
-
-        // defaultPuzzles.forEach(data => {
-        //     const rectSize = 200;
-        //     const startX = data.targetX - rectSize / 2;
-        //     const startY = data.targetY - rectSize / 2;
-
-        //     // 畫出目標區域矩形
-        //     debugGraphics.strokeRect(startX, startY, rectSize, rectSize);
-
-        //     // 喺方框旁邊寫低係邊塊 Puzzle，方便對號入座
-        //     this.add.text(startX, startY - 20, data.content, {
-        //         fontSize: '16px',
-        //         fill: '#ff0000'
-        //     }).setDepth(1);
-        // });
-
-        // const tolerance = 60; // 同你 checkSnap 裡面個數值一樣
-        // defaultPuzzles.forEach(data => {
-        //     debugGraphics.lineStyle(1, 0x00ff00, 0.5); // 綠色虛線感
-        //     debugGraphics.strokeCircle(data.targetX, data.targetY, tolerance);
-        // });
-    }
-    /**
-     * 控制拼圖是否可被操作
-     */
-    enableGameInteraction(enabled) {
-        this.puzzleGroup.getChildren().forEach(p => {
-            if (enabled) {
-                p.setInteractive({ draggable: true, useHandCursor: true });
+            const result = this.findNearestSnapPosition(gameObject.x, gameObject.y, gameObject);
+            if (result.snapPos) {
+                // Snap to position with animation
+                this.tweens.add({
+                    targets: gameObject,
+                    x: result.snapPos.x,
+                    y: result.snapPos.y,
+                    duration: 150,
+                    ease: 'Power2',
+                    onComplete: () => {
+                        // Check if all border 1 positions are occupied
+                        this.checkIfAllOccupied();
+                    }
+                });
             } else {
-                p.disableInteractive();
+                console.log(`[SNAP] No snap position found within ${this.snapRadius}px radius`);
             }
         });
-        this.guide.setVisible(enabled);
+
+        this.border1_correctObjects = [2];
+        this.border2_correctObjects = [1];
+        this.border3_correctObjects = [3];
     }
 
 
-    // --- 拼圖專用邏輯 (保持不變) ---
+    findNearestSnapPosition(x, y, gameObject = null) {
+        let nearestPos = null;
+        let nearestIndex = -1;
+        let minDistance = this.snapRadius;
 
-    selectPuzzle(piece) {
-        if (this.selectedPuzzle) {
-            this.selectedPuzzle.clearTint();
+        for (let i = 0; i < this.snapPositions.length; i++) {
+            const pos = this.snapPositions[i];
+            // Skip occupied positions unless it's occupied by the same object (moving within its own slot)
+            if (pos.isOccupied) {
+                const assignedId = this.positionObjects[i];
+                if (!gameObject || assignedId !== gameObject.objectId) {
+                    continue;
+                }
+            }
+
+            const distance = Phaser.Math.Distance.Between(x, y, pos.x, pos.y);
+            if (distance < minDistance) {
+                minDistance = distance;
+                nearestPos = pos;
+                nearestIndex = i;
+            }
         }
-        this.selectedPuzzle = piece;
-        piece.setTint(0xaaaaaa);
+
+        if (nearestPos && gameObject) {
+            // Remove this object from any previous position
+            Object.keys(this.positionObjects).forEach(key => {
+                if (this.positionObjects[key] === gameObject.objectId) {
+                    delete this.positionObjects[key];
+                    this.snapPositions[key].isOccupied = false;
+                }
+            });
+
+            // Track this object at the new position
+            this.positionObjects[nearestIndex] = gameObject.objectId;
+            nearestPos.isOccupied = true;
+        }
+
+        return { snapPos: nearestPos, index: nearestIndex };
     }
 
-    checkSnap(piece) {
-        const { targetX, targetY } = piece.data.values;
-        const dist = Phaser.Math.Distance.Between(piece.x, piece.y, targetX, targetY);
-        const isAngleCorrect = (piece.angle % 360 === 0);
+    checkIfAllOccupied() {
+        const allPositions = [0, 1, 2];
+        const allOccupied = allPositions.every(i => this.positionObjects.hasOwnProperty(i));
 
-        if (dist < 60 && isAngleCorrect) {
-            piece.setPosition(targetX, targetY).setData('isCorrect', true).disableInteractive().clearTint();
-            this.checkAllDone();
+        if (allOccupied) {
+            console.log('[CHECK] All positions occupied (all 3 borders)!');
+            console.log('[CHECK] Current positions:', this.positionObjects);
+            console.log('[CHECK] Click confirm button to check answer');
         }
     }
 
-    randomPuzzlePosition(puzzles) {
-        const centerX = this.cameras.main.width / 2;
-        const centerY = this.cameras.main.height / 2;
-        const allowedRotations = [0, 90, 180, 270];
+    enableGameInteraction(enable) {
+        this.objects.forEach((obj, index) => {
+            obj.setVisible(enable);
+            obj.setInteractive(enable);
+            if (enable) {
+                console.log(`[INTERACTION] Object ${obj.objectId} at (${Math.round(obj.x)}, ${Math.round(obj.y)}) - visible: ${obj.visible}, interactive: ${obj.input ? obj.input.enabled : 'no input'}`);
+            }
+        });
+        if (this.confirmBtn) {
+            this.confirmBtn.setVisible(enable);
+            console.log(`[INTERACTION] Confirm button visibility: ${enable}`);
+        }
+    }
 
-        puzzles.forEach(puzzle => {
-            puzzle.setPosition(centerX + Phaser.Math.Between(-400, 400), centerY + Phaser.Math.Between(-300, 100));
-            puzzle.setAngle(Phaser.Utils.Array.GetRandom(allowedRotations));
+    checkAnswer() {
+        console.log('[ANSWER] Checking answer...');
+
+
+        const border1Positions = [0];
+        const border1Objects = border1Positions.map(i => this.positionObjects[i]).filter(id => id !== undefined);
+
+        const border2Positions = [1];
+        const border2Objects = border2Positions.map(i => this.positionObjects[i]).filter(id => id !== undefined);
+
+
+        // Check if border 1 has all correct objects
+        const border1Correct = this.border1_correctObjects.every(objId => border1Objects.includes(objId)) &&
+            border1Objects.length === this.border1_correctObjects.length;
+
+        // Check if border 2 has all correct objects
+        const border2Correct = this.border2_correctObjects.every(objId => border2Objects.includes(objId)) &&
+            border2Objects.length === this.border2_correctObjects.length;
+
+
+        if (border1Correct && border2Correct && border3Correct) {
+            console.log('[ANSWER] ✓ All objects correctly placed in all borders!');
+            this.onRoundWin();
+
+
+        } else {
+            console.log('[ANSWER] ✗ Incorrect placement!');
+            this.handleLose();
+        }
+    }
+
+    handleLose() {
+        // Prevent multiple entries
+        if (this.gameState === 'gameLose') return;
+
+        // Standard Logic
+        this.isGameActive = false;
+        this.gameState = 'lose';
+
+        this.label = this.add.image(1650, 350, 'game_fail_label').setDepth(555);
+        if (this.gameTimer) this.gameTimer.stop();
+        this.enableGameInteraction(false);
+        this.updateRoundUI(false);
+        this.showBubble('tryagain');
+
+    }
+
+    resetForNewRound() {
+        // Reset position tracking
+        this.positionObjects = {};
+        this.snapPositions.forEach(pos => pos.isOccupied = false);
+
+        // Reset objects to original positions
+        this.objects.forEach(obj => {
+            obj.x = obj.originalX;
+            obj.y = obj.originalY;
         });
     }
 
-    checkAllDone() {
-        const allCorrect = this.puzzleGroup.getChildren().every(p => p.getData('isCorrect'));
-        if (allCorrect) {
-            console.log("所有拼圖完成!");
-            this.onRoundWin();
-        }
+    onWinBubbleClose() {
+        GameManager.saveGameResult(6, true, this.totalUsedSeconds);
+
+        this.objects.forEach(obj => obj.setVisible(false));
+        if (this.confirmBtn) this.confirmBtn.setVisible(false);
+        this.nextDialog = this.add.image(this.centerX, this.cameras.main.height * 0.8, 'game1_npc_box_win_02').setDepth(1000);
+        this.nextDialog.setInteractive({ useHandCursor: true });
+        this.nextDialog.once('pointerdown', () => {
+            this.nextDialog.destroy();
+            this.showDescriptionPanel();
+        });
     }
 
-    onRoundWin() {
-        if (!this.isGameActive || this.gameState === 'gameWin') return;
 
-        let isFinalWin = (this.roundIndex + 1 >= this.targetRounds) || this.isAllowRoundFail;
-        this.gameState = isFinalWin ? 'gameWin' : 'roundWin';
+    showDescriptionPanel() {
+        console.log('[DESCRIPTION] Showing success description panel');
+        const descriptionPanel = new CustomPanel(this, 960, 540, [
+            { content: 'game1_success_description1' },
+            { content: 'game1_success_description2' }
+        ]);
 
-        this.gameTimer.stop();
-        this._calculateTiming(isFinalWin);
-        this.enableGameInteraction(false);
-        this.updateRoundUI(true);
-
-        // Feedback Visuals
-        this.showFeedbackLabel(true);
-        this.showBubble('win', this.playerGender);
-        this.playFeedback();
-
-    }
-
-    playFeedback() {
-        this.puzzleGroup.setVisible(false);
-        if (this.successVideo) this.successVideo.destroy();
-
-        this.previewSprite = this.add.sprite(960, 440,
-            'game1_success_preview').setDepth(1000).setScale(2);
-        this.previewSprite.play('success_preview_anim');
-    }
-
-    showWin() {
-
-        this.showObjectPanel();
+        descriptionPanel.setDepth(1000);
+        descriptionPanel.show();
+        descriptionPanel.setNextButtonPosition(100, 0);
+        descriptionPanel.setCloseCallBack
+            (() => {
+                descriptionPanel.destroy();
+                this.showObjectPanel();
+            });
     }
 
     showObjectPanel() {
@@ -228,19 +292,21 @@ export class GameScene_1 extends BaseGameScene {
         }]);
         objectPanel.setDepth(1000);
         objectPanel.show();
-        objectPanel.setCloseCallBack(() => GameManager.backToMainStreet(this));
+        objectPanel.setCloseCallBack(() => {
+            GameManager.switchToGameScene(this, 'GameScene_7');
+        });
     }
 
 
-    /**
-     * 重置每一局的拼圖狀態
-     */
-    resetForNewRound() {
-        this.puzzleGroup.setVisible(true);
-        this.puzzleGroup.getChildren().forEach(p => p.setData('isCorrect', false));
-        this.randomPuzzlePosition(this.puzzleGroup.getChildren());
+    drawDebug() {
+        this.debugGraphics = this.add.graphics();
+        this.debugGraphics.lineStyle(2, 0xff0000, 0.5);
+        this.debugGraphics.fillStyle(0xff0000, 0.2);
+        this.snapPositions.forEach(pos => {
+            this.debugGraphics.strokeCircle(pos.x, pos.y, 80); // Draw outer circle
+            this.debugGraphics.fillCircle(pos.x, pos.y, 5); // Draw center point
+        });
+        this.debugGraphics.setDepth(999); // Just below borders
+
     }
-
-
-
 }

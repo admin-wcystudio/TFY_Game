@@ -231,17 +231,17 @@ export class GameScene_1 extends BaseGameScene {
             obj.setVisible(enable);
             obj.setInteractive(enable);
             if (enable) {
-                console.log(`[INTERACTION] Object ${obj.objectId} at (${Math.round(obj.x)}, ${Math.round(obj.y)}) - visible: ${obj.visible}, interactive: ${obj.input ? obj.input.enabled : 'no input'}`);
+                //console.log(`[INTERACTION] Object ${obj.objectId} at (${Math.round(obj.x)}, ${Math.round(obj.y)}) - visible: ${obj.visible}, interactive: ${obj.input ? obj.input.enabled : 'no input'}`);
             }
         });
         if (this.confirmBtn) {
             this.confirmBtn.setVisible(enable);
-            console.log(`[INTERACTION] Confirm button visibility: ${enable}`);
+            //console.log(`[INTERACTION] Confirm button visibility: ${enable}`);
         }
     }
 
     checkAnswer() {
-        console.log('[ANSWER] Checking answer...');
+        //console.log('[ANSWER] Checking answer...');
 
 
         const border1Positions = [0, 1, 2, 3, 4, 5];

@@ -301,20 +301,18 @@ export class MainStreetScene extends Phaser.Scene {
         const npc5_reject_bubbles = ['npc5_bubble_reject', 'npc5_bubble_reject_02'];
         const npc6_bubbles = ['npc6_bubble_1', 'npc6_bubble_2'];
         const npc6_reject_bubbles = ['npc6_bubble_reject', 'npc6_bubble_reject_02'];
-        const npc7_bubbles = ['npc7_bubble_1'];
-        const npc7_reject_bubbles = ['npc7_bubble_reject', 'npc7_bubble_reject_02'];
+
 
         // NPCs (trigger game)
         this.interactiveNpcs = [];
 
-        const n1 = NpcHelper.createNpc(this, 1, 720, 650, 2, 'npc1', npc1_bubbles, 6, 'npc1_anim').setScale(0.8);
-        const n2 = NpcHelper.createNpc(this, 2, 1900, 650, 2, 'npc2', npc2_bubbles, 6, 'npc2_anim').setScale(0.8);
-        const n3 = NpcHelper.createNpc(this, 3, 3800, 650, 2, 'npc3', npc3_bubbles, 6, 'npc3_anim').setScale(0.8);
-        const n4 = NpcHelper.createNpc(this, 4, 4800, 650, 2, 'npc4', npc4_bubbles, 6, 'npc4_anim').setScale(0.8);
-        const n5 = NpcHelper.createNpc(this, 5, 7000, 600, 2, 'npc5', npc5_bubbles, 6, 'npc5_anim').setScale(0.8);
-        const n6 = NpcHelper.createNpc(this, 6, 7450, 650, 2, 'npc6', npc6_bubbles, 6, 'npc6_anim').setScale(0.8);
+        const n1 = NpcHelper.createNpc(this, 1, 720, 650, 2, 'npc1', npc1_bubbles, 6, 'npc1_anim').setScale(0.9);
+        const n2 = NpcHelper.createNpc(this, 2, 1900, 650, 2, 'npc2', npc2_bubbles, 6, 'npc2_anim').setScale(0.9);
+        const n3 = NpcHelper.createNpc(this, 3, 3800, 650, 2, 'npc3', npc3_bubbles, 6, 'npc3_anim').setScale(0.9);
+        const n4 = NpcHelper.createNpc(this, 4, 4800, 650, 2, 'npc4', npc4_bubbles, 6, 'npc4_anim').setScale(0.9);
+        const n5 = NpcHelper.createNpc(this, 5, 5000, 600, 2, 'npc5', npc5_bubbles, 6, 'npc5_anim').setScale(0.9);
+        const n6 = NpcHelper.createNpc(this, 6, 5450, 650, 2, 'npc6', npc6_bubbles, 6, 'npc6_anim').setScale(0.9);
 
-        const n7 = NpcHelper.createNpcItem(this, 7, 6950, 350, 1, 'npc7', 'npc7_select', 6, npc7_bubbles).setScale(0.8);
 
         this.interactiveNpcs.push(n1);
         this.interactiveNpcs.push(n2);
@@ -322,11 +320,10 @@ export class MainStreetScene extends Phaser.Scene {
         this.interactiveNpcs.push(n4);
         this.interactiveNpcs.push(n5);
         this.interactiveNpcs.push(n6);
-        this.interactiveNpcs.push(n7);
 
         this.currentInteractiveNpc = null;
 
-        const npcGameMap = { 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7 };
+        const npcGameMap = { 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6 };
         this.interactiveNpcs.forEach((npc, index) => {
             npc.on('pointerdown', () => {
                 if (npc.canInteract) {
@@ -367,7 +364,7 @@ export class MainStreetScene extends Phaser.Scene {
         }
         this.playerSprite.lastDirectionLeft = isLeft;
 
-        this.playerSprite.x = Phaser.Math.Clamp(this.playerSprite.x, 800, 6200);
+        this.playerSprite.x = Phaser.Math.Clamp(this.playerSprite.x, 0, 5500);
 
 
         const allNpcs = [...this.interactiveNpcs];

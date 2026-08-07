@@ -12,6 +12,9 @@ export class GameScene_7 extends BaseGameScene {
     preload() {
         const path = 'assets/images/Game_7/';
 
+        const player = JSON.parse(localStorage.getItem('player') || '{"gender":"M"}');
+        this.genderKey = player.gender === 'M' ? 'boy' : 'girl';
+
         this.width = this.cameras.main.width;
         this.height = this.cameras.main.height;
         this.centerX = this.width / 2;
@@ -19,23 +22,23 @@ export class GameScene_7 extends BaseGameScene {
 
         this.load.image(`game7_fill_bg`, `${path}game7_fill_bg.png`);
 
-        this.load.image('game7_npc_box_mainstreet_01', `${path}game7_npc_box1.png`);
-        this.load.image('game7_npc_box_mainstreet_02', `${path}game7_npc_box2.png`);
-        this.load.image('game7_npc_box_mainstreet_ok', `${path}game7_npc_box3.png`);
-        this.load.image('game7_npc_box_mainstreet_ok_02', `${path}game7_npc_box4.png`);
-
-        this.load.image('game7_npc_box_win', `${path}game7_npc_box5.png`);
-        this.load.image('game7_npc_box_win_01', `${path}game7_npc_box6.png`);
-        this.load.image('game7_npc_box_tryagain', `${path}game7_npc_box7.png`);
-
+        if (this.genderKey === 'boy') {
+            this.load.video('game7_final_video', `${path}game7_final_boy.mp4`);
+        } else {
+            this.load.video('game7_final_video', `${path}game7_final_girl.mp4`);
+        }
+        this.load.image('game7_npc_box_win', `${path}game7_npc_box4.png`);
+        this.load.image('game7_npc_box_win1', `${path}game7_npc_box5.png`);
+        this.load.image('game7_npc_box_tryagain', `${path}game7_npc_box6.png`);
         this.load.image('game7_confirm_button', `${path}game7_confirm_button.png`);
         this.load.image('game7_confirm_button_select', `${path}game7_confirm_button_select.png`);
 
         for (let i = 1; i <= 5; i++) {
             this.load.image(`game7_fill${i}`, `${path}game7_fill${i}.png`);
-            this.load.image(`game7_fill${i}a_popup`, `${path}game7_fill${i}a_popup.png`);
-            this.load.image(`game7_fill${i}b_popup`, `${path}game7_fill${i}b_popup.png`);
         }
+
+        this.load.image('game7_final_preview1', `${path}game7_final_preview1.png`);
+        this.load.image('game7_final_preview2', `${path}game7_final_preview2.png`);
 
     }
 
@@ -45,7 +48,7 @@ export class GameScene_7 extends BaseGameScene {
             roundPerSeconds: 120,
             isAllowRoundFail: false,
             isContinuousTimer: true,
-            sceneIndex: 6
+            sceneIndex: 7
         });
 
     }
@@ -58,19 +61,19 @@ export class GameScene_7 extends BaseGameScene {
 
         this.cardBg = this.add.image(centerX, centerY, 'game7_fill_bg').setDepth(5);
         this.spawnCardPositions = [
-            { x: centerX - 560, y: centerY - 200, },
-            { x: centerX - 730, y: centerY + 80, },
-            { x: centerX - 650, y: centerY + 350, },
+            { x: centerX - 590, y: centerY - 200, },
+            { x: centerX - 730, y: centerY + 90, },
+            { x: centerX - 650, y: centerY + 380, },
             { x: centerX + 600, y: centerY - 150, },
             { x: centerX + 700, y: centerY + 150, }
         ];
 
         this.defaultCards = [
-            { id: 1, content: 'game7_fill1', targetX: centerX - 225, targetY: centerY - 160, occupiedBy: null },
-            { id: 2, content: 'game7_fill2', targetX: centerX + 200, targetY: centerY - 160, occupiedBy: null },
-            { id: 3, content: 'game7_fill3', targetX: centerX - 420, targetY: centerY + 170, occupiedBy: null },
-            { id: 4, content: 'game7_fill4', targetX: centerX, targetY: centerY + 170, occupiedBy: null },
-            { id: 5, content: 'game7_fill5', targetX: centerX + 410, targetY: centerY + 170, occupiedBy: null }
+            { id: 1, content: 'game7_fill1', targetX: centerX - 240, targetY: centerY - 155, occupiedBy: null },
+            { id: 2, content: 'game7_fill2', targetX: centerX + 220, targetY: centerY - 155, occupiedBy: null },
+            { id: 3, content: 'game7_fill3', targetX: centerX - 420, targetY: centerY + 155, occupiedBy: null },
+            { id: 4, content: 'game7_fill4', targetX: centerX, targetY: centerY + 155, occupiedBy: null },
+            { id: 5, content: 'game7_fill5', targetX: centerX + 410, targetY: centerY + 155, occupiedBy: null }
         ];
 
 
@@ -112,10 +115,8 @@ export class GameScene_7 extends BaseGameScene {
 
         this.confirm_button.setDepth(100);
 
-        // const debugGraphics = this.add.graphics().setDepth(this.depth + 2); // 擺喺背景上面，物件下面
-        // debugGraphics.lineStyle(4, 0xff0000, 1); // 紅色線，粗度 2
-
-        // const tolerance = 60; // 同你 checkSnap 裡面個數值一樣
+        // const debugGraphics = this.add.graphics().setDepth(200);
+        // const tolerance = 60;
         // this.defaultCards.forEach(data => {
         //     debugGraphics.lineStyle(3, 0x00ff00, 0.5); // 綠色虛線感
         //     debugGraphics.strokeCircle(data.targetX, data.targetY, tolerance);
@@ -130,45 +131,6 @@ export class GameScene_7 extends BaseGameScene {
         this.selectedCard = card;
         this.selectedCard.setTint(0xaaaaaa);
 
-    }
-
-    showObjectDescription(objectKey) {
-        const descriptionKey = `${objectKey}a_popup`;
-        const descriptionKeyB = `${objectKey}b_popup`;
-
-        const pauseDescriptionPanel = () => {
-            if (this.gameTimer) {
-                this.gameTimer.stop();
-            }
-            this.cardGroup.getChildren().forEach(card => card.disableInteractive());
-            if (this.confirm_button) {
-                this.confirm_button.setActive(false);
-            }
-        };
-
-        const resumeDescriptionPanel = () => {
-            if (this.gameTimer) {
-                this.gameTimer.start();
-            }
-            this.cardGroup.getChildren().forEach(card => card.setInteractive({ draggable: true }));
-            if (this.confirm_button) {
-                this.confirm_button.setActive(true);
-            }
-        };
-
-        const descriptionPanel = new CustomPanel(this, 960, 540, [
-            { content: descriptionKey },
-            { content: descriptionKeyB }
-        ]);
-
-        descriptionPanel.setDepth(1000);
-        descriptionPanel.setCloseCallBack(() => {
-            descriptionPanel.destroy();
-            resumeDescriptionPanel();
-        });
-
-        pauseDescriptionPanel();
-        descriptionPanel.show();
     }
 
     enableGameInteraction(enable) {
@@ -206,7 +168,6 @@ export class GameScene_7 extends BaseGameScene {
                     card.clearTint();
                 }
             }
-            //console.log('Target Position -', pos.id, ',current card', pos.occupiedBy ? pos.occupiedBy.texture.key : 'none');
         });
 
         // Snap to nearest slot and show description
@@ -214,7 +175,6 @@ export class GameScene_7 extends BaseGameScene {
             card.setPosition(nearest.targetX, nearest.targetY);
             nearest.occupiedBy = card;
             card.clearTint();
-            this.showObjectDescription(card.texture.key);
         }
     }
 
@@ -284,13 +244,40 @@ export class GameScene_7 extends BaseGameScene {
         const centerX = this.cameras.main.width / 2;
         // Adaptive Y: 20% from bottom for win/tryagain, 80% for intro
         const centerY = this.cameras.main.height * 0.8;
-        this.npcBox = this.add.image(centerX, centerY, 'game7_npc_box_win_01')
-            .setDepth(1000).setInteractive({ useHandCursor: true });
+        const winDialog = this.add.image(this.centerX, centerY, 'game7_npc_box_win1').setDepth(1001);
+        winDialog.setInteractive({ useHandCursor: true });
+        winDialog.on('pointerdown', () => {
+            winDialog.destroy();
+            this.playFinalVideo();
+        });
 
-        this.npcBox.once('pointerdown', () => {
-            this.npcBox.destroy();
-            this.npcBox = null;
-            GameManager.backToMainStreet(this);
+    }
+
+
+    playFinalVideo() {
+        const centerY = this.cameras.main.height * 0.8;
+        const video = this.add.video(this.centerX, this.centerY, 'game7_final_video').setDepth(999);
+        video.play();
+
+        video.on('complete', () => {
+            this.time.delayedCall(2000, () => {
+                this.showWinPreview();
+            });
+        });
+    }
+
+    showWinPreview() {
+        this.winPreview = this.add.image(960, 540, 'game7_final_preview1').setDepth(2000).setVisible(true)
+            .setInteractive({ useHandCursor: true });
+        this.winPreview.on('pointerdown', () => {
+            this.winPreview.destroy();
+
+            this.winPreview2 = this.add.image(960, 540, 'game7_final_preview2').setDepth(2000).setVisible(true)
+                .setInteractive({ useHandCursor: true });
+            this.winPreview2.on('pointerdown', () => {
+                this.winPreview2.destroy();
+                GameManager.switchToGameScene(this, 'GameResultScene');
+            });
         });
     }
 
@@ -316,6 +303,7 @@ export class GameScene_7 extends BaseGameScene {
 
         this.enableGameInteraction(true);
     }
+
 
 
 }

@@ -55,7 +55,7 @@ export default class BaseGameScene extends Phaser.Scene {
      * @param {boolean} autoStart - Auto start game
      * @param {object} customConfig - Custom configuration object
      */
-    initGame(bgKey, descriptionKey = null, skipIntroBubble = false, autoStart = false, customConfig = {}) {
+    initGame(bgKey, descriptionKey, skipIntroBubble = false, autoStart = false, customConfig = {}) {
 
         if (customConfig) {
             this.targetRounds = customConfig.targetRounds ?? this.targetRounds;
@@ -74,18 +74,24 @@ export default class BaseGameScene extends Phaser.Scene {
         this.roundIndex = 0;
         this.totalUsedSeconds = 0;
 
-        const player = JSON.parse(localStorage.getItem('player') || '{"gender":"M"}');
+        let player = { gender: 'F' }; // Default to Female
+        try {
+            const stored = localStorage.getItem('player');
+            if (stored) {
+                player = JSON.parse(stored);
+            }
+        } catch (e) {
+            console.error("Error parsing player data", e);
+        }
         this.playerGender = player.gender; // Store gender for use in win bubbles
         const descriptionPages = this._formatDescription(descriptionKey);
-        this.descriptionKey = descriptionKey;
 
         this.gameUI = UIHelper.createGameCommonUI(this, bgKey,
             descriptionPages, this.targetRounds, this.config.depthUI);
 
-        if (descriptionKey)
-            this.gameUI.descriptionPanel.show();
+        this.gameUI.descriptionPanel.show();
 
-        console.log('Game UI Initialized');
+        console.log('Game UI Initialized , Gender:', this.playerGender);
 
         this._setupTimer();
         this.setupGameObjects();
@@ -121,8 +127,6 @@ export default class BaseGameScene extends Phaser.Scene {
             'tryagain2': `${prefix}_npc_box_tryagain2`,
             'lock': `${prefix}_npc_box_lock`
         };
-
-        console.log(`[Bubble] Showing bubble of type "${type}"`);
 
         let targetKey = bubbleMapping[type];
 
@@ -168,7 +172,6 @@ export default class BaseGameScene extends Phaser.Scene {
         if (type === 'intro') {
             this.currentBubbleImg.once('pointerdown', () => {
                 closeBubble();
-                this.onIntroBubbleClose();
                 this.startGame();
             });
         } else if (type === 'win') {
@@ -200,10 +203,14 @@ export default class BaseGameScene extends Phaser.Scene {
                     if (this.roundIndex + 1 < this.targetRounds) {
                         this.nextRound();
                     } else {
-                        this.showLose();
+                        this.showLose(() => {
+                            this.showFailPanel();
+                        });
                     }
                 } else {
-                    this.showLose();
+                    this.showLose(() => {
+                        this.showFailPanel();
+                    });
                 }
             });
 
@@ -225,7 +232,6 @@ export default class BaseGameScene extends Phaser.Scene {
     }
 
     _formatDescription(key) {
-        if (!key) return null;
         const keys = Array.isArray(key) ? key : [key];
         return keys.map(k => ({
             content: k,
@@ -299,18 +305,14 @@ export default class BaseGameScene extends Phaser.Scene {
     }
 
     _calculateTiming(isFinalWin) {
-        console.log('[Timing] Calculating timing for round win...');
         if (!this.gameTimer?.getRemaining) return;
 
         const used = Math.max(0, this.roundPerSeconds - this.gameTimer.getRemaining());
-        console.log(`[Timing] Seconds used this round: ${used}`);
-        // Always accumulate the seconds used for the round.
-        // Previous logic reset to current round when final, then added again,
-        // causing the final round to be counted twice.
-        this.totalUsedSeconds += used;
-        console.log(`[Timing] Total seconds used so far: ${this.totalUsedSeconds}`);
-
-        if (!this.isContinuousTimer && !isFinalWin) {
+        if (this.isContinuousTimer) {
+            if (isFinalWin) this.totalUsedSeconds = used;
+        } else {
+            this.totalUsedSeconds += used;
+            if (isFinalWin) return;
             this.gameTimer.reset(this.roundPerSeconds);
         }
     }
@@ -329,10 +331,10 @@ export default class BaseGameScene extends Phaser.Scene {
                     GameManager.saveGameResult(this.sceneIndex, true, this.totalUsedSeconds);
                     console.log(`遊戲 ${this.sceneIndex} 結束，總用時: ${this.totalUsedSeconds} 秒`);
                 }
+                this.showWin();
                 this.isGameActive = false;
                 this.gameState = 'completed';
                 if (typeof this.onGameWin === 'function') this.onGameWin();
-                this.showWin();
             }
         }
     }
@@ -459,14 +461,16 @@ export default class BaseGameScene extends Phaser.Scene {
         // 6. Call subclass-specific reset
         this.resetForNewRound();
 
-        // 7. Re-show description panel to restart the flow 
-        if (this.descriptionKey) {
+        // 7. Re-apply init state after subclass reset (subclass may set gameState to 'playing')
+        this.gameState = 'init';
+        this.isGameActive = false;
+        this.enableGameInteraction(false);
+
+        // 8. Re-show description panel to restart the flow
+        if (this.gameUI?.descriptionPanel) {
             this.gameUI.descriptionPanel.show();
             // Set callback to start game when panel is closed (skip intro since already shown)
             this.gameUI.descriptionPanel.setCloseCallBack(() => this.startGame());
-        } else {
-            // If there's no description panel (e.g., video background scenes), start immediately
-            this.startGame();
         }
 
         console.log('[Game] Whole game reset - restarting from beginning');
@@ -499,10 +503,6 @@ export default class BaseGameScene extends Phaser.Scene {
 
     // --- Abstract Hooks (To be implemented by your 7 games) ---
 
-    onIntroBubbleClose() {
-
-    }
-
     setupGameObjects() {
         // Example: this.add.sprite(...) or this.physics.add.group(...)
     }
@@ -516,12 +516,10 @@ export default class BaseGameScene extends Phaser.Scene {
     }
     showObjectPanel() { }
 
-    showWin() {
-        GameManager.backToMainStreet(this);
-    }
+    showWin() { }
 
-    showLose() {
-        this.showFailPanel();
+    showLose(onComplete) {
+        if (onComplete) onComplete();
     }
     // --- Utilities ---
 

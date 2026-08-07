@@ -1,21 +1,20 @@
 export default class NpcHelper {
 
-    static createNpc(scene, id, x, y, npcScale = 2, key, bubbles, depth = 10, animKey = null) {
+    static createNpc(scene, id, x, y, npcScale = 2, key, bubbles = [], depth = 10, animKey = null) {
 
         let npc;
 
         npc = scene.add.sprite(x, y, key).setDepth(depth);
         npc.play(animKey);
 
-
-        npc.setScale(2);
+        npc.setScale(npcScale);
+        npc.bubbles = bubbles;
         npc.animKey = animKey;
         npc.baseKey = key;
         npc.baseAnimKey = animKey;
-        npc.glowKey = `${key}_glow`;
-        npc.glowAnimKey = `${key}_glow_anim`;
+        npc.glowKey = `${key}_select`;
+        npc.glowAnimKey = animKey ? `${npc.glowKey}_anim` : null;
         npc.isGlow = false;
-        npc.bubbles = bubbles;
         npc.setInteractive({ useHandCursor: true });
         npc.id = id;
         npc.proximityDistance = 300;
@@ -23,13 +22,14 @@ export default class NpcHelper {
         return npc;
     }
 
-    static createNpcItem(scene, id, x, y, npcScale = 2, key, glowKey = null, depth = 10,) {
+    static createNpcItem(scene, id, x, y, npcScale = 2, key, glowKey = null, depth = 10, bubbles = []) {
 
         let npcItem;
 
         npcItem = scene.add.image(x, y, key).setDepth(depth);
 
         npcItem.setScale(npcScale);
+        npcItem.bubbles = bubbles;
         npcItem.baseKey = key;
         npcItem.glowKey = glowKey ?? `${key}_glow`;
         npcItem.isGlow = false;

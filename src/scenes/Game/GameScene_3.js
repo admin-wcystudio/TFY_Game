@@ -12,28 +12,26 @@ export class GameScene_3 extends BaseGameScene {
         const path = 'assets/images/Game_3/';
 
         this.load.image('game3_npc_box_win', `${path}game3_npc_box2.png`);
-        this.load.image('game3_npc_box_tryagain', `${path}game3_npc_box3.png`);
+        this.load.image('game3_npc_box_win1', `${path}game3_npc_box3.png`);
+        this.load.image('game3_npc_box_tryagain', `${path}game3_npc_box4.png`);
 
         // Buttons
-        this.load.image('game3_button_blue', `${path}game3_arrow_blue.png`);
-        this.load.image('game3_button_green', `${path}game3_arrow_green.png`);
-        this.load.image('game3_button_red', `${path}game3_arrow_red.png`);
-        this.load.image('game3_button_yellow', `${path}game3_arrow_yellow.png`);
+        this.load.image('game3_button_blue', `${path}game3_button_blue.png`);
+        this.load.image('game3_button_green', `${path}game3_button_green.png`);
+        this.load.image('game3_button_red', `${path}game3_button_red.png`);
+        this.load.image('game3_button_yellow', `${path}game3_button_yellow.png`);
 
-        // Arrows
-        this.load.image('game3_bar_arrow_blue', `${path}game3_bar_arrow_blue.png`);
-        this.load.image('game3_bar_arrow_green', `${path}game3_bar_arrow_green.png`);
-        this.load.image('game3_bar_arrow_red', `${path}game3_bar_arrow_red.png`);
-        this.load.image('game3_bar_arrow_yellow', `${path}game3_bar_arrow_yellow.png`);
+        // peachs
+        this.load.image('game3_bar_peach_blue', `${path}game3_bar_peach_blue.png`);
+        this.load.image('game3_bar_peach_green', `${path}game3_bar_peach_green.png`);
+        this.load.image('game3_bar_peach_red', `${path}game3_bar_peach_red.png`);
+        this.load.image('game3_bar_peach_yellow', `${path}game3_bar_peach_yellow.png`);
 
         this.load.image('game3_object_description', `${path}game3_object_description.png`);
-
 
         // Other UI
         this.load.image('game3_bar_bg', `${path}game3_bar_bg.png`);
         this.load.image('game3_hit_point', `${path}game3_hit_point.png`);
-
-        this.load.image('game3_success_description', `${path}game3_success_description.png`);
 
     }
 
@@ -69,7 +67,7 @@ export class GameScene_3 extends BaseGameScene {
         this.isWin = false;
         this.spawnSpeed = 3;
         this.currentIndex = 0;
-        this.fallingArrows = [];
+        this.fallingpeachs = [];
         this.hitPointTimer = null;
 
         if (this.buttonGroup) {
@@ -77,36 +75,36 @@ export class GameScene_3 extends BaseGameScene {
                 this.buttonGroup.destroy(true);
             }
         }
-        if (this.arrowGroup) {
-            if (this.arrowGroup.scene) {
-                this.arrowGroup.destroy(true);
+        if (this.peachGroup) {
+            if (this.peachGroup.scene) {
+                this.peachGroup.destroy(true);
             }
         }
 
         this.buttonGroup = this.add.group();
-        this.arrowGroup = this.add.group();
+        this.peachGroup = this.add.group();
         const colors = ['blue', 'green', 'red', 'yellow'];
         for (let i = 0; i < 4; i++) {
             const button = new CustomButton(this, 520 + i * 300, 780, `game3_button_${colors[i]}`, `game3_button_${colors[i]}`,
                 () => {
-                    this.handleArrowClick(i);
+                    this.handlepeachClick(i);
                 }).setDepth(25);
             this.buttonGroup.add(button);
         }
 
         for (let i = 0; i < colors.length; i++) {
-            const arrow = this.add.image(960, -100, `game3_bar_arrow_${colors[i]}`).setDepth(23);
-            this.arrowGroup.add(arrow);
+            const peach = this.add.image(960, -100, `game3_bar_peach_${colors[i]}`).setDepth(23);
+            this.peachGroup.add(peach);
         }
 
     }
     update() {
         if (this.canSpawn) {
-            if (!this.fallingArrows || this.fallingArrows.length < 2) {
-                this.spawnArrow();
+            if (!this.fallingpeachs || this.fallingpeachs.length < 2) {
+                this.spawnpeach();
             }
 
-            if (!this.fallingArrows) return;
+            if (!this.fallingpeachs) return;
 
 
             if (!this.spawnHitPoint && !this.hitPointTimer) {
@@ -120,15 +118,15 @@ export class GameScene_3 extends BaseGameScene {
             }
 
 
-            for (let i = this.fallingArrows.length - 1; i >= 0; i--) {
-                const arrow = this.fallingArrows[i];
-                arrow.x -= this.spawnSpeed;
-                if (!arrow.visible && arrow.x <= 1620) {
-                    arrow.setVisible(true);
+            for (let i = this.fallingpeachs.length - 1; i >= 0; i--) {
+                const peach = this.fallingpeachs[i];
+                peach.x -= this.spawnSpeed;
+                if (!peach.visible && peach.x <= 1620) {
+                    peach.setVisible(true);
                 }
-                if (arrow.x < 200) {
-                    arrow.destroy();
-                    this.fallingArrows.splice(i, 1);
+                if (peach.x < 200) {
+                    peach.destroy();
+                    this.fallingpeachs.splice(i, 1);
                 }
             }
 
@@ -209,17 +207,17 @@ export class GameScene_3 extends BaseGameScene {
         }
     }
 
-    spawnArrow() {
-        if (!this.fallingArrows) this.fallingArrows = [];
-        //console.log('Spawning Arrow ');
+    spawnpeach() {
+        if (!this.fallingpeachs) this.fallingpeachs = [];
+        //console.log('Spawning peach ');
         const colors = ['blue', 'green', 'red', 'yellow'];
         const gap = 200;
         let startX;
 
-        if (this.fallingArrows.length > 0) {
-            const rightMostArrow = this.fallingArrows.reduce((
-                max, arrow) => arrow.x > max.x ? arrow : max, this.fallingArrows[0]);
-            startX = Math.max(rightMostArrow.x, 1620);
+        if (this.fallingpeachs.length > 0) {
+            const rightMostpeach = this.fallingpeachs.reduce((
+                max, peach) => peach.x > max.x ? peach : max, this.fallingpeachs[0]);
+            startX = Math.max(rightMostpeach.x, 1620);
         } else {
             startX = 800; // initial spawn starts inside the visible bar
         }
@@ -230,49 +228,49 @@ export class GameScene_3 extends BaseGameScene {
         for (let i = 1; i <= 15; i++) {
             const randomIndex = Phaser.Math.Between(0, colors.length - 1);
             const color = colors[randomIndex];
-            const arrowX = startX + (i * gap);
-            const arrow = this.add.image(arrowX, 540, `game3_bar_arrow_${color}`).setDepth(24);
-            arrow.colorIndex = randomIndex;
-            arrow.setVisible(arrowX <= BAR_RIGHT_X);
-            this.fallingArrows.push(arrow);
+            const peachX = startX + (i * gap);
+            const peach = this.add.image(peachX, 540, `game3_bar_peach_${color}`).setDepth(24);
+            peach.colorIndex = randomIndex;
+            peach.setVisible(peachX <= BAR_RIGHT_X);
+            this.fallingpeachs.push(peach);
         }
 
     }
 
-    handleArrowClick(index) {
-        if (!this.fallingArrows || this.fallingArrows.length === 0) return;
+    handlepeachClick(index) {
+        if (!this.fallingpeachs || this.fallingpeachs.length === 0) return;
 
-        // Collider-based hit detection: check rectangle overlap between hitPoint and arrows
+        // Collider-based hit detection: check rectangle overlap between hitPoint and peachs
         let winRound = false;
         let hitIndex = -1;
-        if (this.isHitPointValid && this.hitPoint && this.fallingArrows && this.fallingArrows.length) {
+        if (this.isHitPointValid && this.hitPoint && this.fallingpeachs && this.fallingpeachs.length) {
             const hitRect = this.hitPoint.getBounds();
-            for (let i = 0; i < this.fallingArrows.length; i++) {
-                const arrow = this.fallingArrows[i];
-                if (arrow.colorIndex !== index) continue;
-                const arrowRect = arrow.getBounds();
-                if (Phaser.Geom.Intersects.RectangleToRectangle(hitRect, arrowRect)) {
+            for (let i = 0; i < this.fallingpeachs.length; i++) {
+                const peach = this.fallingpeachs[i];
+                if (peach.colorIndex !== index) continue;
+                const peachRect = peach.getBounds();
+                if (Phaser.Geom.Intersects.RectangleToRectangle(hitRect, peachRect)) {
                     hitIndex = i;
                     break;
                 }
             }
 
             if (hitIndex !== -1) {
-                const arrow = this.fallingArrows[hitIndex];
+                const peach = this.fallingpeachs[hitIndex];
                 console.log('Win round');
                 winRound = true;
             } else {
-                console.log('No overlapping matching arrow. Arrows:', this.fallingArrows.map(a => ({ x: Math.round(a.x), color: a.colorIndex })));
+                console.log('No overlapping matching peach. peachs:', this.fallingpeachs.map(a => ({ x: Math.round(a.x), color: a.colorIndex })));
             }
         } else {
             if (!this.isHitPointValid) console.log('Hit attempted but hit point not valid');
         }
 
-        // Common cleanup: destroy arrows, hitPoint, and hide barBG
-        for (let i = 0; i < this.fallingArrows.length; i++) {
-            this.fallingArrows[i].destroy();
+        // Common cleanup: destroy peachs, hitPoint, and hide barBG
+        for (let i = 0; i < this.fallingpeachs.length; i++) {
+            this.fallingpeachs[i].destroy();
         }
-        this.fallingArrows = [];
+        this.fallingpeachs = [];
         this.canSpawn = false;
         this.spawnHitPoint = false;
         this.isHitPointValid = false;
@@ -331,12 +329,12 @@ export class GameScene_3 extends BaseGameScene {
     onWinBubbleClose() {
         const centerX = this.cameras.main.width / 2;
 
-        this.successDescription = this.add.image(centerX, this.centerY, 'game3_success_description').setDepth(1000)
-            .setInteractive({ useHandCursor: true })
-            .on('pointerdown', () => {
-                this.successDescription.destroy();
-                this.showObjectPanel();
-            });
+        this.nextDialog = this.add.image(this.centerX, this.cameras.main.height * 0.8, 'game3_npc_box_win1').setDepth(1000);
+        this.nextDialog.setInteractive({ useHandCursor: true });
+        this.nextDialog.once('pointerdown', () => {
+            this.nextDialog.destroy();
+            this.showObjectPanel();
+        });
     }
 
     showObjectPanel() {
@@ -370,15 +368,15 @@ export class GameScene_3 extends BaseGameScene {
         // Ensure debug overlay is removed when resetting rounds
         this.clearDebugHitZone();
 
-        if (this.fallingArrows) {
-            for (let i = this.fallingArrows.length - 1; i >= 0; i--) {
-                const arrow = this.fallingArrows[i];
-                if (arrow) {
-                    arrow.destroy();
+        if (this.fallingpeachs) {
+            for (let i = this.fallingpeachs.length - 1; i >= 0; i--) {
+                const peach = this.fallingpeachs[i];
+                if (peach) {
+                    peach.destroy();
                 }
             }
         }
-        this.fallingArrows = [];
+        this.fallingpeachs = [];
 
         if (this.progressSuccess) {
             this.progressSuccess.destroy();

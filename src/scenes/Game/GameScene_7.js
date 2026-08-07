@@ -1,8 +1,8 @@
-
 import BaseGameScene from './BaseGameScene.js';
 import { CustomButton } from '../../UI/Button.js';
 import { CustomPanel, CustomFailPanel } from '../../UI/Panel.js';
 import GameManager from '../GameManager.js';
+
 
 export class GameScene_7 extends BaseGameScene {
     constructor() {
@@ -11,363 +11,310 @@ export class GameScene_7 extends BaseGameScene {
 
     preload() {
         const path = 'assets/images/Game_7/';
-        const player = JSON.parse(localStorage.getItem('player') || '{"gender":"M"}');
-        this.genderKey = player.gender === 'M' ? 'boy' : 'girl';
 
-        this.load.image('confirm_button', `${path}game7_confirm_button.png`);
-        this.load.image('confirm_button_select', `${path}game7_confirm_button_select.png`);
-
-
-        for (let i = 1; i <= 6; i++) {
-            this.load.image(`game7_answer${i}`, `${path}game7_answer${i}.png`);
-            this.load.image(`game7_fill_answer${i}`, `${path}game7_fill_answer${i}.png`);
-        }
-
-        this.load.image('game7_npc_box_intro', `${path}game7_npc_box1.png`);
-
-        this.load.image('game7_npc_box_win', `${path}game7_npc_box2.png`);
-        this.load.image('game7_npc_box_win_2', `${path}game7_npc_box3.png`);
-        this.load.image('game7_npc_box_win_3', `${path}game7_npc_box4.png`);
-        this.load.image('game7_npc_box_tryagain', `${path}game7_npc_box5.png`);
-
-        this.load.image('final_preview1', `${path}game7_final_preview1.png`);
-        this.load.image('final_preview2', `${path}game7_final_preview2.png`);
-        this.load.image('select_area', `${path}game7_select_area.png`);
-        this.load.image('game7_border', `${path}game7_border.png`);
-
-        this.load.image('game7_success_description', `${path}game7_success_description.png`);
-        this.load.video('success_video', `${path}game7_success_preview.mp4`);
-
-
-    }
-
-    create() {
         this.width = this.cameras.main.width;
         this.height = this.cameras.main.height;
         this.centerX = this.width / 2;
         this.centerY = this.height / 2;
 
-        this.spawnPositions = [
-            { x: this.centerX - 800, y: this.centerY - 150 },
-            { x: this.centerX - 800, y: this.centerY + 350 },
-            { x: this.centerX - 800, y: this.centerY + 100 },
-            { x: this.centerX + 800, y: this.centerY - 150 },
-            { x: this.centerX + 800, y: this.centerY + 100 },
-            { x: this.centerX + 800, y: this.centerY + 350 },
-        ];
+        this.load.image(`game7_fill_bg`, `${path}game7_fill_bg.png`);
 
+        this.load.image('game7_npc_box_mainstreet_01', `${path}game7_npc_box1.png`);
+        this.load.image('game7_npc_box_mainstreet_02', `${path}game7_npc_box2.png`);
+        this.load.image('game7_npc_box_mainstreet_ok', `${path}game7_npc_box3.png`);
+        this.load.image('game7_npc_box_mainstreet_ok_02', `${path}game7_npc_box4.png`);
 
+        this.load.image('game7_npc_box_win', `${path}game7_npc_box5.png`);
+        this.load.image('game7_npc_box_win_01', `${path}game7_npc_box6.png`);
+        this.load.image('game7_npc_box_tryagain', `${path}game7_npc_box7.png`);
 
-        this.confirmBtn = new CustomButton(this, this.centerX, this.height - 150,
-            'confirm_button', 'confirm_button_select', () => {
-                this.checkAnswer();
-            });
-        this.confirmBtn.setDepth(100).setVisible(false);
+        this.load.image('game7_confirm_button', `${path}game7_confirm_button.png`);
+        this.load.image('game7_confirm_button_select', `${path}game7_confirm_button_select.png`);
 
-        this.initGame('game7_bg', 'game7_description', false, false, {
+        for (let i = 1; i <= 5; i++) {
+            this.load.image(`game7_fill${i}`, `${path}game7_fill${i}.png`);
+            this.load.image(`game7_fill${i}a_popup`, `${path}game7_fill${i}a_popup.png`);
+            this.load.image(`game7_fill${i}b_popup`, `${path}game7_fill${i}b_popup.png`);
+        }
+
+    }
+
+    create() {
+        this.initGame('game7_bg', 'game7_description', true, false, {
             targetRounds: 1,
             roundPerSeconds: 120,
             isAllowRoundFail: false,
             isContinuousTimer: true,
-            sceneIndex: 7
+            sceneIndex: 6
         });
 
     }
 
     setupGameObjects() {
-        this.content = this.add.image(this.centerX, this.centerY, 'game7_border').setDepth(1);
 
-        this.targetContents = [
-            {
-                key: 'game7_answer1', fillKey: 'game7_fill_answer1'
-                , position: { x: 970, y: 420 }
-            },
-            {
-                key: 'game7_answer2', fillKey: 'game7_fill_answer2',
-                position: { x: 931, y: 510 }
-            },
-            {
-                key: 'game7_answer3', fillKey: 'game7_fill_answer3', position:
-                    { x: 1210, y: 510 }
-            },
-            {
-                key: 'game7_answer4', fillKey: 'game7_fill_answer4', position:
-                    { x: 690, y: 610 }
-            },
-            {
-                key: 'game7_answer5', fillKey: 'game7_fill_answer5', position:
-                    { x: 1140, y: 610 }
-            },
-            {
-                key: 'game7_answer6', fillKey: 'game7_fill_answer6', position:
-                    { x: 1275, y: 705 }
-            },
+        this.isChecked = false;
+        const centerX = this.cameras.main.width / 2;
+        const centerY = this.cameras.main.height / 2;
+
+        this.cardBg = this.add.image(centerX, centerY, 'game7_fill_bg').setDepth(5);
+        this.spawnCardPositions = [
+            { x: centerX - 560, y: centerY - 200, },
+            { x: centerX - 730, y: centerY + 80, },
+            { x: centerX - 650, y: centerY + 350, },
+            { x: centerX + 600, y: centerY - 150, },
+            { x: centerX + 700, y: centerY + 150, }
         ];
 
-        // --- Debug Graphics for Positions --- 
+        this.defaultCards = [
+            { id: 1, content: 'game7_fill1', targetX: centerX - 225, targetY: centerY - 160, occupiedBy: null },
+            { id: 2, content: 'game7_fill2', targetX: centerX + 200, targetY: centerY - 160, occupiedBy: null },
+            { id: 3, content: 'game7_fill3', targetX: centerX - 420, targetY: centerY + 170, occupiedBy: null },
+            { id: 4, content: 'game7_fill4', targetX: centerX, targetY: centerY + 170, occupiedBy: null },
+            { id: 5, content: 'game7_fill5', targetX: centerX + 410, targetY: centerY + 170, occupiedBy: null }
+        ];
 
-        // const debugGraphics = this.add.graphics().setDepth(999);
-        // this.targetContents.forEach(tc => {
-        //     // Draw a red dot directly on the (x, y) coordinate
-        //     debugGraphics.fillStyle(0xff0000, 0.8);
-        //     debugGraphics.fillCircle(tc.position.x, tc.position.y, 10);
+
+        this.cardGroup = this.add.group();
+
+        // Shuffle spawn positions for initial spawn
+        const shuffledPositions = Phaser.Utils.Array.Shuffle([...this.spawnCardPositions]);
+        this.defaultCards.forEach((cardInfo, i) => {
+            const spawnPos = shuffledPositions[i % shuffledPositions.length];
+            const card = this.add.image(spawnPos.x, spawnPos.y, cardInfo.content);
+            card.setData({ targetX: cardInfo.targetX, targetY: cardInfo.targetY, isCorrect: false });
+            card.on('pointerdown', () => {
+                this.selectCard(card);
+            });
+            this.cardGroup.add(card);
+            card.setDepth(10);
+        });
+
+        this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
+            if (this.selectedCard !== gameObject) this.selectCard(gameObject);
+            gameObject.setPosition(dragX, dragY).setDepth(100);
+        });
+
+        this.input.on('dragend', (pointer, gameObject) => {
+            gameObject.setDepth(50);
+            // Log the texture key (name) of the gameObject
+            this.checkSnap(gameObject);
+        });
+
+        this.confirm_button = new CustomButton(this, centerX + 800, centerY + 400,
+            'game7_confirm_button', 'game7_confirm_button_select',
+            () => {
+                console.log(' button clicked');
+                if (this.isChecked) return;
+                this.isChecked = true;
+                this.checkAllDone();
+            }, () => { }).setScale(0.8);
+        this.confirm_button.setActive(false);
+
+        this.confirm_button.setDepth(100);
+
+        // const debugGraphics = this.add.graphics().setDepth(this.depth + 2); // 擺喺背景上面，物件下面
+        // debugGraphics.lineStyle(4, 0xff0000, 1); // 紅色線，粗度 2
+
+        // const tolerance = 60; // 同你 checkSnap 裡面個數值一樣
+        // this.defaultCards.forEach(data => {
+        //     debugGraphics.lineStyle(3, 0x00ff00, 0.5); // 綠色虛線感
+        //     debugGraphics.strokeCircle(data.targetX, data.targetY, tolerance);
         // });
-
-        // --- 1. Create fill slots – select_area indicator only, hidden by default, no hint texture ---
-        this.fillSlots = this.targetContents.map(tc => {
-            const selectArea = this.add.image(tc.position.x, tc.position.y, 'select_area')
-                .setDepth(500)
-                .setVisible(false);
-            return {
-                selectArea,
-                fillKey: tc.fillKey,
-                targetKey: tc.key,
-                position: tc.position,
-                occupiedBy: null,
-            };
-        });
-
-        // --- 2. Randomize spawn positions and create draggable answer keys ---
-        const answerKeys = ['game7_answer1', 'game7_answer2',
-            'game7_answer3', 'game7_answer4', 'game7_answer5', 'game7_answer6'];
-        const shuffledPositions = Phaser.Utils.Array.Shuffle([...this.spawnPositions]);
-
-        this.answerKeyObjects = [];
-        const SNAP_RADIUS = 120;
-
-        answerKeys.forEach((key, i) => {
-            const pos = shuffledPositions[i];
-            const img = this.add.image(pos.x, pos.y, key)
-                .setDepth(10)
-                .setInteractive({ draggable: true });
-
-            img.answerKey = key;
-            img.fillKey = key.replace('game7_answer', 'game7_fill_answer');
-            img.originalX = pos.x;
-            img.originalY = pos.y;
-            img.currentSlot = null;
-
-            // drag – move with pointer; highlight nearest slot within range
-            img.on('drag', (pointer, dragX, dragY) => {
-                img.x = dragX;
-                img.y = dragY;
-                img.setDepth(20);
-
-                // Show select_area only for the closest empty-or-current slot within range
-                let closestSlot = null;
-                let closestDist = SNAP_RADIUS;
-                this.fillSlots.forEach(slot => {
-                    // Don't highlight a slot already occupied by another key
-                    if (slot.occupiedBy && slot.occupiedBy !== img.answerKey) return;
-                    const dist = Phaser.Math.Distance.Between(dragX, dragY, slot.position.x, slot.position.y);
-                    if (dist < closestDist) { closestDist = dist; closestSlot = slot; }
-                });
-
-                this.fillSlots.forEach(slot => {
-                    slot.selectArea.setVisible(slot === closestSlot);
-                });
-            });
-
-            // dragend – snap to nearest slot or return to origin
-            img.on('dragend', () => {
-                // Hide all select_area indicators
-                this.fillSlots.forEach(slot => slot.selectArea.setVisible(false));
-
-                let closestSlot = null;
-                let closestDist = SNAP_RADIUS;
-                this.fillSlots.forEach(slot => {
-                    if (slot.occupiedBy && slot.occupiedBy !== img.answerKey) return;
-                    const dist = Phaser.Math.Distance.Between(img.x, img.y, slot.position.x, slot.position.y);
-                    if (dist < closestDist) { closestDist = dist; closestSlot = slot; }
-                });
-
-                if (closestSlot) {
-                    // Evict any key already in that slot – revert its texture and send it home
-                    if (closestSlot.occupiedBy && closestSlot.occupiedBy !== img.answerKey) {
-                        const prev = this.answerKeyObjects.find(a => a.answerKey === closestSlot.occupiedBy);
-                        if (prev) {
-                            prev.setTexture(prev.answerKey);
-                            prev.clearTint();
-                            prev.x = prev.originalX;
-                            prev.y = prev.originalY;
-                            prev.setDepth(10);
-                            prev.currentSlot = null;
-                        }
-                    }
-
-                    // Revert the slot this key was previously in
-                    if (img.currentSlot) {
-                        img.currentSlot.occupiedBy = null;
-                    }
-
-                    // Snap into the new slot and switch to the dragged key's fill texture
-                    img.x = closestSlot.position.x;
-                    img.y = closestSlot.position.y;
-                    img.setDepth(505);
-                    img.setTexture(img.fillKey);
-                    closestSlot.occupiedBy = img.answerKey;
-                    img.currentSlot = closestSlot;
-
-                } else {
-                    // Return to spawn origin and restore original texture
-                    if (img.currentSlot) {
-                        img.currentSlot.occupiedBy = null;
-                        img.currentSlot = null;
-                    }
-                    img.setTexture(img.answerKey);
-                    // img.clearTint();
-                    img.x = img.originalX;
-                    img.y = img.originalY;
-                    img.setDepth(10);
-                }
-
-                // After every drop, refresh tint feedback on all filled slots
-                //  this._updateSlotTints();
-            });
-
-            console.log(`Created answer key: ${key} at (${pos.x}, ${pos.y})`);
-
-            this.answerKeyObjects.push(img);
-        });
-
 
     }
 
-    // Tint each snapped key: green = correct slot, red = wrong slot
-    _updateSlotTints() {
-        this.fillSlots.forEach(slot => {
-            if (!slot.occupiedBy) return;
-            const img = this.answerKeyObjects.find(a => a.answerKey === slot.occupiedBy);
-            if (!img) return;
-            const isCorrect = slot.occupiedBy === slot.targetKey;
-            img.setTint(isCorrect ? 0x00ff00 : 0xff4444);
+    selectCard(card) {
+        if (this.selectedCard) {
+            this.selectedCard.clearTint();
+        }
+        this.selectedCard = card;
+        this.selectedCard.setTint(0xaaaaaa);
+
+    }
+
+    showObjectDescription(objectKey) {
+        const descriptionKey = `${objectKey}a_popup`;
+        const descriptionKeyB = `${objectKey}b_popup`;
+
+        const pauseDescriptionPanel = () => {
+            if (this.gameTimer) {
+                this.gameTimer.stop();
+            }
+            this.cardGroup.getChildren().forEach(card => card.disableInteractive());
+            if (this.confirm_button) {
+                this.confirm_button.setActive(false);
+            }
+        };
+
+        const resumeDescriptionPanel = () => {
+            if (this.gameTimer) {
+                this.gameTimer.start();
+            }
+            this.cardGroup.getChildren().forEach(card => card.setInteractive({ draggable: true }));
+            if (this.confirm_button) {
+                this.confirm_button.setActive(true);
+            }
+        };
+
+        const descriptionPanel = new CustomPanel(this, 960, 540, [
+            { content: descriptionKey },
+            { content: descriptionKeyB }
+        ]);
+
+        descriptionPanel.setDepth(1000);
+        descriptionPanel.setCloseCallBack(() => {
+            descriptionPanel.destroy();
+            resumeDescriptionPanel();
         });
+
+        pauseDescriptionPanel();
+        descriptionPanel.show();
     }
 
     enableGameInteraction(enable) {
-        this.answerKeyObjects.forEach(
-            img => img.setInteractive(enable)
-        );
-        this.fillSlots.forEach(slot => slot.selectArea.setVisible(false));
-        this.confirmBtn.setVisible(enable);
-    }
-
-    checkAnswer() {
-        console.log('Checking answers...');
-        // Each slot's occupiedBy must match its targetKey
-        const allCorrect = this.fillSlots.every(slot => slot.occupiedBy === slot.targetKey);
-
-
-        if (allCorrect) {
-            console.log('All correct!');
-            this.onRoundWin();
-        } else {
-            console.log('Incorrect, try again.');
-            this.handleLose();
+        this.cardGroup.getChildren().forEach(card => {
+            if (enable) {
+                card.setVisible(true);
+                card.setInteractive({ draggable: true });
+            } else {
+                card.disableInteractive();
+                card.setVisible(false);
+            }
+        });
+        this.confirm_button.setActive(enable);
+        this.cardBg.setVisible(enable);
+        if (enable) {
+            this.isChecked = false;
         }
     }
 
-    resetForNewRound() {
-        // Clear all slots
-        this.fillSlots.forEach(slot => { slot.occupiedBy = null; });
-
-        // Re-shuffle spawn positions and reassign to each key
-        const shuffledPositions = Phaser.Utils.Array.Shuffle([...this.spawnPositions]);
-
-        this.answerKeyObjects.forEach((img, i) => {
-            img.currentSlot = null;
-            img.setTexture(img.answerKey);
-            img.clearTint();
-            img.setDepth(10);
-
-            const pos = shuffledPositions[i];
-            img.originalX = pos.x;
-            img.originalY = pos.y;
-            img.x = pos.x;
-            img.y = pos.y;
+    checkSnap(card) {
+        // Find the nearest unoccupied card position within threshold
+        const threshold = 60;
+        let nearest = null;
+        let minDist = Infinity;
+        this.defaultCards.forEach(pos => {
+            if (!pos.occupiedBy) {
+                const d = Phaser.Math.Distance.Between(card.x, card.y, pos.targetX, pos.targetY);
+                if (d < threshold && d < minDist) {
+                    minDist = d;
+                    nearest = pos;
+                }
+            } else {
+                if (pos.occupiedBy === card) {
+                    pos.occupiedBy = null;
+                    card.clearTint();
+                }
+            }
+            //console.log('Target Position -', pos.id, ',current card', pos.occupiedBy ? pos.occupiedBy.texture.key : 'none');
         });
+
+        // Snap to nearest slot and show description
+        if (nearest) {
+            card.setPosition(nearest.targetX, nearest.targetY);
+            nearest.occupiedBy = card;
+            card.clearTint();
+            this.showObjectDescription(card.texture.key);
+        }
+    }
+
+    randomCardPosition(cards) {
+        // Shuffle spawn positions
+        const shuffledPositions = Phaser.Utils.Array.Shuffle([...this.spawnCardPositions]);
+        cards.forEach((card, i) => {
+            const pos = shuffledPositions[i % shuffledPositions.length];
+            card.setPosition(pos.x, pos.y);
+        });
+    }
+
+    checkAllDone() {
+        console.log('Checking all cards...');
+        let allCorrect = true;
+
+        this.defaultCards.forEach(cardInfo => {
+            if (cardInfo.occupiedBy) {
+                const placedKey = cardInfo.occupiedBy.texture.key;
+                const targetKey = cardInfo.content;
+
+                if (targetKey === placedKey) {
+                    cardInfo.occupiedBy.setData('isCorrect', true);
+                } else {
+                    cardInfo.occupiedBy.setData('isCorrect', false);
+                    allCorrect = false;
+                }
+            } else {
+                allCorrect = false;
+            }
+        });
+
+        if (allCorrect) {
+            this.onRoundWin();
+        } else {
+            this.handleLose();
+        }
+
     }
 
     onRoundWin() {
         if (!this.isGameActive || this.gameState === 'gameWin') return;
 
-        let isFinalWin = this.roundIndex + 1 >= this.targetRounds;
-        this.gameState = 'gameWin';
+        console.log(`Round ${this.roundIndex} win`);
+        let isFinalWin = (this.roundIndex + 1 == this.targetRounds);
+        this.gameState = isFinalWin ? 'gameWin' : 'roundWin';
 
         this.gameTimer.stop();
         this._calculateTiming(isFinalWin);
         this.enableGameInteraction(false);
+
+        if (isFinalWin) {
+            this.showFeedbackLabel(true);
+            this.showBubble('win');
+        } else {
+
+            this.roundIndex++;
+            this.resetForNewRound();
+        }
+
         this.updateRoundUI(true);
 
-        // Feedback Visuals
-        this.showFeedbackLabel(true);
-        this.showBubble('win', this.playerGender);
-    }
-    onWinBubbleClose() {
-
-        GameManager.saveGameResult(7, true, this.totalUsedSeconds);
-        this.content.setVisible(false);
-        this.answerKeyObjects.forEach(img => img.setVisible(false));
-        this.fillSlots.forEach(slot => slot.selectArea.setVisible(false));
-
-        this.otherDialog = this.add.image(this.centerX, this.cameras.main.height * 0.8, 'game7_npc_box_win_2')
-            .setDepth(100).setInteractive({ useHandCursor: true });
-        this.otherDialog.on('pointerdown', () => {
-            this.otherDialog.destroy();
-            this.otherDialog = this.add.image(this.centerX, this.cameras.main.height * 0.8, 'game7_npc_box_win_3')
-                .setDepth(100).setInteractive({ useHandCursor: true });
-            this.otherDialog.on('pointerdown', () => {
-                this.otherDialog.destroy();
-                this.playSuccessVideoFeedback();
-            });
-        });
 
     }
+    showWin() {
 
-    playSuccessVideoFeedback() {
+        const centerX = this.cameras.main.width / 2;
+        // Adaptive Y: 20% from bottom for win/tryagain, 80% for intro
+        const centerY = this.cameras.main.height * 0.8;
+        this.npcBox = this.add.image(centerX, centerY, 'game7_npc_box_win_01')
+            .setDepth(1000).setInteractive({ useHandCursor: true });
 
-        // Hide UI elements
-        if (this.gameUI && this.gameUI.roundStates) {
-            this.gameUI.roundStates.forEach(state => state.content.setVisible(false));
-        }
-        if (this.gameTimer) {
-            if (this.gameTimer.timerBg) this.gameTimer.timerBg.setVisible(false);
-            if (this.gameTimer.timerText) this.gameTimer.timerText.setVisible(false);
-        }
-        if (this.feedbackLabel) {
-            this.feedbackLabel.setVisible(false);
-        }
-
-        this.video = this.add.video(this.centerX, this.centerY, `success_video`).setDepth(100);
-        this.video.play(true);
-
-        this.descriptionPanel = new CustomPanel(this, this.centerX, this.centerY, [{
-            content: 'game7_success_description',
-            closeBtn: 'close_btn',
-            closeBtnClick: 'close_btn_click'
-        }]);
-        this.descriptionPanel.setDepth(101);
-        this.descriptionPanel.setCloseCallBack(() => {
-            this.descriptionPanel.destroy();
-            this.showFinalPanel();
-        });
-
-        this.time.delayedCall(4000, () => {
-            this.descriptionPanel.show();
+        this.npcBox.once('pointerdown', () => {
+            this.npcBox.destroy();
+            this.npcBox = null;
+            GameManager.backToMainStreet(this);
         });
     }
 
-    showFinalPanel() {
-        const objectPanel = new CustomPanel(this, 960, 600, [
-            {
-                content: 'final_preview1',
-            }, {
-                content: 'final_preview2',
-            }
-        ]);
-        objectPanel.setDepth(1000);
-        objectPanel.show();
-        objectPanel.setCloseCallBack(() => GameManager.switchToGameScene(this, 'GameResultScene'));
+
+    resetForNewRound() {
+        if (this.video) this.video.destroy();
+        if (this.label) { this.label.destroy(); this.label = null; }
+
+        this.randomCardPosition(this.cardGroup.getChildren());
+        this.cardGroup.getChildren().forEach(card => {
+            card.setData('isCorrect', false);
+        });
+        this.defaultCards.forEach(pos => {
+            pos.occupiedBy = null;
+        });
+        this.cardGroup.setVisible(true);
+        this.cardBg.setVisible(true);
+        this.confirm_button.setVisible(true);
+
+        this.gameState = 'playing';
+        this.isGameActive = true;
+        this.isChecked = false;
+
+        this.enableGameInteraction(true);
     }
 
 

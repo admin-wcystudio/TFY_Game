@@ -395,9 +395,10 @@ export class CustomFailPanel extends Phaser.GameObjects.Container {
 
 // game 3 
 export class QuestionPanel extends Phaser.GameObjects.Container {
-    constructor(scene, contents, onComplete) {
+    constructor(scene, contents, titles, onComplete) {
         super(scene, 960, 540);
         this.scene = scene;
+        this.titles = titles;
         this.onComplete = onComplete;
         this.currentIndex = 0;
         this.selectedAnswerIndex = -1;
@@ -407,14 +408,16 @@ export class QuestionPanel extends Phaser.GameObjects.Container {
 
         // Create image for displaying question content
         this.contentImage = scene.add.image(0, 50, '').setDepth(200).setVisible(false);
-        this.add([this.contentImage]);
+        this.titleImage = scene.add.image(0, -340, '').setDepth(1099).setVisible(false);
+        this.add([this.contentImage, this.titleImage]);
 
-        // 2. 確認按鈕 (初始隱藏)
         this.confirmBtn = new CustomButton(scene, 0, 380,
-            'confirm_button', 'confirm_button_select', () => {
+            'game2_confirm_button', 'game2_confirm_button_select', () => {
                 this.checkAnswer();
             });
+
         this.add(this.confirmBtn);
+
 
         this.optionButtons = [];
         this.showQuestion();
@@ -422,8 +425,11 @@ export class QuestionPanel extends Phaser.GameObjects.Container {
     }
 
     showQuestion() {
+        this.title = this.titles[this.currentIndex];
+        this.titleImage.setTexture(this.title).setVisible(true);
+
         const q = this.questions[this.currentIndex];
-        this.contentImage.setTexture(q.content).setVisible(true);
+        this.contentImage.setTexture(q.question).setVisible(true);
         if (this.optionButtons) {
             this.optionButtons.forEach(btn => btn.destroy());
         }
@@ -431,165 +437,15 @@ export class QuestionPanel extends Phaser.GameObjects.Container {
 
         const options = q.options || q.option; // Support both 'options' and 'option'
         options.forEach((optKey, index) => {
-            const x = 0;
-            const y = -100 + index * 120;
+            const col = index % 2;
+            const row = Math.floor(index / 2);
+            const x = -220 + col * 500;
+            const y = 80 + row * 160;
             const btn = new CustomButton(this.scene, x, y, optKey, `${optKey}_select`,
                 () => {
-                    console.log(`${optKey}_select`);
                     this.selectedAnswer(btn, index);
                 });
-            btn.needClicked = true;
-
-            this.add(btn); // 加入 Container
-            this.optionButtons.push(btn); // 加入陣列追蹤
-        });
-    }
-    selectedAnswer(gameObject, index) {
-        // Reset all buttons to normal state
-        this.optionButtons.forEach(btn => {
-            btn.isClicked = false;
-            btn.setNormalState();
-            btn.clearTint();
-        });
-
-        console.log('Selected answer index:', index);
-        // Lock selected button in pressed/highlighted state
-        gameObject.isClicked = true;
-        gameObject.setPressedState();
-        this.selectedAnswerIndex = index;
-    }
-
-    showDialogList() {
-        const centerX = this.scene.cameras.main.width / 2;
-        const centerY = this.scene.cameras.main.height * 0.8;
-        this.dialogVideo = this.scene.add.video(centerX, 540, 'game6_talk_video').setDepth(800).
-            setVisible(true).setScrollFactor(0);
-        this.dialogVideo.play(true);
-
-        const q = this.questions[this.currentIndex];
-        if (q.dialoges && q.dialoges.length > 0) {
-            const dialogKeys = q.dialoges;
-            console.log('Dialog keys:', dialogKeys);
-            let dialogIndex = 0;
-
-            const dialogImage = this.scene.add.image(centerX, centerY, dialogKeys[dialogIndex])
-                .setDepth(801).setInteractive({ useHandCursor: true }).setVisible(true);
-
-            const advance = () => {
-                dialogIndex++;
-                if (dialogIndex < dialogKeys.length) {
-                    dialogImage.setTexture(dialogKeys[dialogIndex]);
-                } else {
-                    dialogImage.destroy();
-                    this.nextQuestion();
-                }
-            };
-
-            dialogImage.on('pointerdown', advance);
-        } else {
-            this.nextQuestion();
-        }
-    }
-
-
-    checkAnswer() {
-        const q = this.questions[this.currentIndex];
-        const centerX = this.scene.cameras.main.width / 2;
-
-        console.log(`Selected: ${this.selectedAnswerIndex}, Correct: ${q.answer}`);
-        if (this.selectedAnswerIndex === q.answer) {
-            // Stop timer and hide panel while showing dialog
-            if (this.scene.gameTimer) this.scene.gameTimer.stop();
-            this.setVisible(false);
-            this.showDialogList();
-        } else {
-            console.log("答錯了 , correct : " + q.answer);
-            this.scene.updateRoundUI(false);
-            this.setVisible(false);
-            if (!this.dialogVideo) {
-                const centerX = this.scene.cameras.main.width / 2;
-                this.dialogVideo = this.scene.add.video(centerX, 540, 'game6_talk_video')
-                    .setDepth(800).setScrollFactor(0);
-                this.dialogVideo.play(true);
-            }
-            this.dialogVideo.setVisible(true);
-            this.scene.handleLose();
-
-        }
-    }
-
-    destroy() {
-        if (this.dialogVideo) {
-            this.dialogVideo.destroy();
-            this.dialogVideo = null;
-        }
-        super.destroy();
-    }
-
-    nextQuestion() {
-        this.scene.onRoundWin();
-        this.scene.roundIndex++;
-        this.currentIndex++;
-        if (this.currentIndex < this.questions.length) {
-            if (this.dialogVideo) this.dialogVideo.setVisible(false);
-            this.setVisible(true);
-            this.confirmBtn.setVisible(true);
-            this.selectedAnswerIndex = -1;
-            if (this.scene.gameTimer) this.scene.gameTimer.start();
-            this.showQuestion();
-        } else {
-            this.scene.onRoundWin();
-            this.dialogVideo.setVisible(true);
-            console.log('All questions answered correctly!');
-            this.destroy();
-        }
-    }
-}
-
-
-export class QuestionPanel_7 extends Phaser.GameObjects.Container {
-    constructor(scene, contents, onComplete) {
-        super(scene, 960, 540);
-        this.scene = scene;
-        this.onComplete = onComplete;
-        this.currentIndex = 0;
-        this.selectedAnswerIndex = -1;
-
-        // Store the questions array
-        this.questions = contents;
-
-        // Create image for displaying question content
-        this.contentImage = scene.add.image(0, 50, '').setDepth(200).setVisible(false);
-        this.add([this.contentImage]);
-
-        // 2. 確認按鈕 (初始隱藏)
-        this.confirmBtn = new CustomButton(scene, 0, 380,
-            'confirm_button', 'confirm_button_select', () => {
-                this.checkAnswer();
-            });
-        this.add(this.confirmBtn);
-
-        this.optionButtons = [];
-        this.showQuestion();
-        scene.add.existing(this);
-    }
-
-    showQuestion() {
-        const q = this.questions[this.currentIndex];
-        this.contentImage.setTexture(q.content).setVisible(true);
-        if (this.optionButtons) {
-            this.optionButtons.forEach(btn => btn.destroy());
-        }
-        this.optionButtons = [];
-
-        const options = q.options || q.option; // Support both 'options' and 'option'
-        options.forEach((optKey, index) => {
-            const y = -50 + index * 120;
-            const btn = new CustomButton(this.scene, 0, y, optKey, `${optKey}_select`,
-                () => {
-                    this.selectedAnswer(btn, index);
-                });
-            btn.needClicked = true;
+            btn.isClicked = true;
 
             this.add(btn); // 加入 Container
             this.optionButtons.push(btn); // 加入陣列追蹤
@@ -599,15 +455,10 @@ export class QuestionPanel_7 extends Phaser.GameObjects.Container {
     handleSelect(index) {
         // Deprecated: use selectedAnswer instead
         this.selectedAnswer(this.optionButtons[index], index);
+        console.log(`Selected option index: ${index}`);
     }
     selectedAnswer(gameObject, index) {
-        // Reset all buttons to normal state
-        this.optionButtons.forEach(btn => {
-            btn.isClicked = false;
-            btn.setNormalState();
-            btn.clearTint();
-        });
-        // Lock selected button in pressed/highlighted state
+        this.optionButtons.forEach(btn => { btn.isClicked = false; btn.setNormalState(); });
         gameObject.isClicked = true;
         gameObject.setPressedState();
         this.selectedAnswerIndex = index;
@@ -618,9 +469,16 @@ export class QuestionPanel_7 extends Phaser.GameObjects.Container {
 
         console.log(`Selected: ${this.selectedAnswerIndex}, Correct: ${q.answer}`);
         if (this.selectedAnswerIndex === q.answer) {
+            if (this.scene.gameTimer) this.scene.gameTimer.stop();
+
             if (this.scene.updateRoundUI) {
                 this.scene.updateRoundUI(true);
                 this.scene.roundIndex++;
+            }
+            const descriptionKey = q.description;
+            if (descriptionKey) {
+                this.showAddOn(q.description);
+            } else {
                 this.nextQuestion();
             }
         } else {
@@ -630,18 +488,39 @@ export class QuestionPanel_7 extends Phaser.GameObjects.Container {
         }
     }
 
+    showAddOn(descriptionKey) {
+        this.optionButtons.forEach(btn => btn.setVisible(false));
+        this.contentImage.setVisible(false);
+        this.confirmBtn.setVisible(false);
+
+        const descrImg = this.scene.add.image(0, 0, descriptionKey)
+            .setInteractive({ useHandCursor: true }).setVisible(true).setDepth(299);
+        this.add(descrImg);
+
+        descrImg.once('pointerdown', () => {
+            descrImg.destroy();
+            this.nextQuestion();
+        });
+    }
+
+
     nextQuestion() {
-        this.scene.onRoundWin();
         this.currentIndex++;
         if (this.currentIndex < this.questions.length) {
+            if (this.scene.gameTimer) {
+                this.scene.gameTimer.reset(this.scene.roundPerSeconds);
+                this.scene.gameTimer.start();
+            }
             this.confirmBtn.setVisible(true);
             this.selectedAnswerIndex = -1;
             this.showQuestion();
         } else {
             console.log('All questions answered correctly!');
+            this.scene.onRoundWin();
+            if (this.onComplete) this.onComplete();
             this.destroy(); // 3 題都答完了
 
         }
-
     }
 }
+

@@ -61,7 +61,7 @@ class BaseButton extends Phaser.GameObjects.Image {
     handleUp() {
         if (!this.input?.enabled) return;
         this.isHeldDown = false;
-        if (!this.needClicked) {
+        if (!this.needClicked && !this.isClicked) {
             this.setNormalState();
             this.cbUp();
         }
@@ -93,8 +93,6 @@ class BaseButton extends Phaser.GameObjects.Image {
     }
     setPressedState() {
         if (this.pressedKey) this.setTexture(this.pressedKey);
-
-
 
         // Haptic feel: shrink slightly when pressed
         this.scene.tweens.add({

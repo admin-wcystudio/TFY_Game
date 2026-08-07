@@ -324,7 +324,7 @@ export class GameScene_1 extends BaseGameScene {
         objectPanel.setDepth(1000);
         objectPanel.show();
         objectPanel.setCloseCallBack(() => {
-            //GameManager.backToMainStreet(this);
+            GameManager.backToMainStreet(this);
         });
     }
 

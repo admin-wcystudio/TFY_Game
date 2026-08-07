@@ -79,9 +79,6 @@ export class MainStreetScene extends Phaser.Scene {
             this.load.image(`object${i}`, `assets/images/MainStreet/stage_object${i}.png`);
         }
 
-        this.load.image('npc7', 'assets/images/MainStreet/NPCs/NPC7.png');
-        this.load.image('npc7_select', 'assets/images/MainStreet/NPCs/NPC7_select.png');
-
         this.load.image('gameintro', 'assets/images/MainStreet/gameintro.png');
 
         this.load.image('npc1_bubble_1', 'assets/images/Game_1/game1_npc_box1.png');
@@ -214,19 +211,19 @@ export class MainStreetScene extends Phaser.Scene {
 
         console.log(`Player gender: ${gender}, genderKey: ${genderKey}`);
 
+        // Stage panels: 1920 + 1920 + 1920 + 1074 = 6834
         const bgKeys = ['stage1', 'stage2', 'stage3', 'stage4'];
-        this.object1 = this.add.image(5240, 850, 'object1').setDepth(16);
-        this.object2 = this.add.image(5520, 545, 'object2').setDepth(15).setScale(1.01);
-
-
         let currentX = 0;
-        //background
-        bgKeys.forEach((key, index) => {
+        bgKeys.forEach((key) => {
             const bg = this.add.image(currentX, 540, key).setOrigin(0, 0.5).setDepth(1);
-            currentX += bg.width; // 累加寬度，讓下一張接在後面
+            currentX += bg.width;
         });
-        // 設定相機邊界為總長度 8414px
-        this.cameras.main.setBounds(0, 0, 7800, 1080);
+        this.worldWidth = currentX;
+        this.cameras.main.setBounds(0, 0, this.worldWidth, 1080);
+
+        // Foreground overlays (rock/boat + bridge) for depth layering
+        this.object1 = this.add.image(5240, 850, 'object1').setDepth(16);
+        this.object2 = this.add.image(3780, 780, 'object2').setDepth(15).setScale(1.01);
 
         const introPage = [
             {
@@ -293,33 +290,42 @@ export class MainStreetScene extends Phaser.Scene {
         const npc1_bubbles = ['npc1_bubble_1'];
         const npc2_bubbles = ['npc2_bubble_1'];
         const npc3_bubbles = ['npc3_bubble_1'];
-
         const npc4_bubbles = ['npc4_bubble_1'];
-        const npc4_reject_bubbles = ['npc5_bubble_reject', 'npc5_bubble_reject_02'];
-
         const npc5_bubbles = ['npc5_bubble_1'];
-        const npc5_reject_bubbles = ['npc5_bubble_reject', 'npc5_bubble_reject_02'];
         const npc6_bubbles = ['npc6_bubble_1', 'npc6_bubble_2'];
-        const npc6_reject_bubbles = ['npc6_bubble_reject', 'npc6_bubble_reject_02'];
 
+        // Ambient FakeNPCs — match panoramic concept (left → right)
+        // Fake5 elderly couple | Fake4 digging | Fake3 chicken | Fake2 kids | Fake1 dog
+        this.ambientNpcs = [];
+        this.ambientNpcs.push(
+            NpcHelper.createCharacter(this, 420, 560, 0.85, 'fakeNpc5', 5, 'fakeNpc5_anim')
+        );
+        this.ambientNpcs.push(
+            NpcHelper.createCharacter(this, 980, 640, 0.95, 'fakeNpc4', 6, 'fakeNpc4_anim')
+        );
+        this.ambientNpcs.push(
+            NpcHelper.createCharacter(this, 1280, 720, 0.9, 'fakeNpc3', 7, 'fakeNpc3_anim')
+        );
+        this.ambientNpcs.push(
+            NpcHelper.createCharacter(this, 2550, 680, 0.9, 'fakeNpc2', 7, 'fakeNpc2_anim')
+        );
+        this.ambientNpcs.push(
+            NpcHelper.createCharacter(this, 3100, 740, 0.85, 'fakeNpc1', 8, 'fakeNpc1_anim')
+        );
 
-        // NPCs (trigger game)
+        // Interactive NPCs — placed by role to match concept art
+        // NPC5 farmer (garden path) → NPC4 basket woman → NPC3 elder (shop)
+        // → NPC6 flower boy → NPC2 fisherman (bridge) → NPC1 scholar (stone table)
         this.interactiveNpcs = [];
 
-        const n1 = NpcHelper.createNpc(this, 1, 720, 650, 2, 'npc1', npc1_bubbles, 6, 'npc1_anim').setScale(0.9);
-        const n2 = NpcHelper.createNpc(this, 2, 1900, 650, 2, 'npc2', npc2_bubbles, 6, 'npc2_anim').setScale(0.9);
-        const n3 = NpcHelper.createNpc(this, 3, 3800, 650, 2, 'npc3', npc3_bubbles, 6, 'npc3_anim').setScale(0.9);
-        const n4 = NpcHelper.createNpc(this, 4, 4800, 650, 2, 'npc4', npc4_bubbles, 6, 'npc4_anim').setScale(0.9);
-        const n5 = NpcHelper.createNpc(this, 5, 5000, 600, 2, 'npc5', npc5_bubbles, 6, 'npc5_anim').setScale(0.9);
-        const n6 = NpcHelper.createNpc(this, 6, 5450, 650, 2, 'npc6', npc6_bubbles, 6, 'npc6_anim').setScale(0.9);
+        const n5 = NpcHelper.createNpc(this, 5, 1550, 650, 0.9, 'npc5', npc5_bubbles, 8, 'npc5_anim');
+        const n4 = NpcHelper.createNpc(this, 4, 2200, 650, 0.9, 'npc4', npc4_bubbles, 8, 'npc4_anim');
+        const n3 = NpcHelper.createNpc(this, 3, 2880, 620, 0.9, 'npc3', npc3_bubbles, 8, 'npc3_anim');
+        const n6 = NpcHelper.createNpc(this, 6, 3400, 650, 0.9, 'npc6', npc6_bubbles, 8, 'npc6_anim');
+        const n2 = NpcHelper.createNpc(this, 2, 4000, 650, 0.9, 'npc2', npc2_bubbles, 8, 'npc2_anim');
+        const n1 = NpcHelper.createNpc(this, 1, 4950, 600, 0.9, 'npc1', npc1_bubbles, 8, 'npc1_anim');
 
-
-        this.interactiveNpcs.push(n1);
-        this.interactiveNpcs.push(n2);
-        this.interactiveNpcs.push(n3);
-        this.interactiveNpcs.push(n4);
-        this.interactiveNpcs.push(n5);
-        this.interactiveNpcs.push(n6);
+        this.interactiveNpcs.push(n1, n2, n3, n4, n5, n6);
 
         this.currentInteractiveNpc = null;
 
@@ -364,7 +370,7 @@ export class MainStreetScene extends Phaser.Scene {
         }
         this.playerSprite.lastDirectionLeft = isLeft;
 
-        this.playerSprite.x = Phaser.Math.Clamp(this.playerSprite.x, 0, 5500);
+        this.playerSprite.x = Phaser.Math.Clamp(this.playerSprite.x, 100, this.worldWidth - 200);
 
 
         const allNpcs = [...this.interactiveNpcs];
@@ -587,6 +593,38 @@ export class MainStreetScene extends Phaser.Scene {
             key: 'npc6_select_anim',
             frames: this.anims.generateFrameNumbers('npc6_select', { start: 0, end: 19 }),
             frameRate: 15,
+            repeat: -1
+        });
+
+        // Ambient FakeNPC animations
+        this.anims.create({
+            key: 'fakeNpc1_anim',
+            frames: this.anims.generateFrameNumbers('fakeNpc1', { start: 0, end: 14 }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'fakeNpc2_anim',
+            frames: this.anims.generateFrameNumbers('fakeNpc2', { start: 0, end: 19 }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'fakeNpc3_anim',
+            frames: this.anims.generateFrameNumbers('fakeNpc3', { start: 0, end: 14 }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'fakeNpc4_anim',
+            frames: this.anims.generateFrameNumbers('fakeNpc4', { start: 0, end: 19 }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'fakeNpc5_anim',
+            frames: this.anims.generateFrameNumbers('fakeNpc5', { start: 0, end: 19 }),
+            frameRate: 10,
             repeat: -1
         });
 

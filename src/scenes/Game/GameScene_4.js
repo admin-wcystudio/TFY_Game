@@ -389,7 +389,7 @@ export class GameScene_4 extends BaseGameScene {
         failObjectPositions.forEach((pos, i) => {
             if (this.failObjects.length == this.maxFailObjects) return;
             const failKey = `game4_fail_object${(i % 3) + 1}`;
-            const failSprite = this.add.image(pos.x, pos.y, failKey).setDepth(2);
+            const failSprite = this.add.image(pos.x, pos.y, failKey).setDepth(2).setScale(0.95);
             this.failObjects.push(failSprite);
         });
         // console.log(`[GameScene_2] Placed ${this.failObjects.length} fail objects`);
@@ -414,7 +414,7 @@ export class GameScene_4 extends BaseGameScene {
         successObjectPositions.forEach((pos, i) => {
             if (this.successObjects.length == this.maxSuccessObjects) return;
             const successKey = `game4_success_object${(i % 3) + 1}`;
-            const successSprite = this.add.image(pos.x, pos.y, successKey).setDepth(2);
+            const successSprite = this.add.image(pos.x, pos.y, successKey).setDepth(2).setScale(0.9);
             this.successObjects.push(successSprite);
         });
         //console.log(`[GameScene_2] Placed ${this.successObjects.length} success objects`);
@@ -516,11 +516,9 @@ export class GameScene_4 extends BaseGameScene {
         const objectPanel = new CustomPanel(this, 960, 600, [
             {
                 content: 'game4_object_description',
-                closeBtn: 'close_btn', closeBtnClick: 'close_btn_click'
-            },
-        ]);
-        objectPanel.setNextBtnPosition(0, 50);
-        objectPanel.setPrevBtnPosition(0, 50);
+                closeBtn: 'close_btn',
+                closeBtnClick: 'close_btn_click'
+            }]);
         objectPanel.setDepth(1000);
         objectPanel.show();
         objectPanel.setCloseCallBack(() => GameManager.backToMainStreet(this));

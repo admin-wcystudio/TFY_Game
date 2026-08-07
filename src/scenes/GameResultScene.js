@@ -121,7 +121,7 @@ export class GameResultScene extends Phaser.Scene {
         const playerName = this.playerInfo ? this.playerInfo.name : "玩家 1";
         this.game.renderer.snapshot((image) => {
             const link = document.createElement('a');
-            link.setAttribute('download', `虞美人_${playerName}_${new Date().getTime()}.png`);
+            link.setAttribute('download', `桃花源_${playerName}_${new Date().getTime()}.png`);
             link.setAttribute('href', image.src);
             document.body.appendChild(link);
             link.click();

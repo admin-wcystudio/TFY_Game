@@ -78,6 +78,9 @@ export class BootScene extends Phaser.Scene {
             'game4_object_description',
             'itempage_item5',
             'itempage_item5_select',
+            'game5_object_description',
+            'itempage_item6',
+            'itempage_item6_select',
             'game6_object_description',
             'itempage_item_box',
             'itempage_bg',
@@ -117,8 +120,9 @@ export class BootScene extends Phaser.Scene {
 
         // load game bg
         for (let i = 1; i <= 7; i++) {
-            this.load.image(`game${i}_description`, `assets/images/Game_${i}/game${i}_description.png`);
             //  if (i !== 6) continue;
+            this.load.image(`game${i}_description`, `assets/images/Game_${i}/game${i}_description.png`);
+
             this.load.image(`game${i}_bg`, `assets/images/Game_${i}/game${i}_bg.png`);
         }
 
@@ -136,7 +140,7 @@ export class BootScene extends Phaser.Scene {
 
             this.registry.set('globalSettings', settings);
         }
-        this.scene.start('GameScene_7');
+        this.scene.start('GameResultScene');
     }
 }
 

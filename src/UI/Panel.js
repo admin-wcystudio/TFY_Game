@@ -267,8 +267,12 @@ export class ItemsPanel extends Phaser.GameObjects.Container {
             {
                 itemKey: 'itempage_item5',
                 itemSelectKey: 'itempage_item5_select',
-                itemDescriptionKey: 'game6_object_description',
-                gameId: 6
+                itemDescriptionKey: 'game5_object_description'
+            },
+            {
+                itemKey: 'itempage_item6',
+                itemSelectKey: 'itempage_item6_select',
+                itemDescriptionKey: 'game6_object_description'
             }
         ];
 
@@ -308,7 +312,7 @@ export class ItemsPanel extends Phaser.GameObjects.Container {
             const slot = orderedSlots[index];
             if (!slot) return;
 
-            const gameId = item.gameId || index + 1;
+            const gameId = index + 1;
             const isUnlocked = allResults.find(r => r.game === gameId)?.isFinished;
             if (!isUnlocked) return;
 
@@ -367,6 +371,7 @@ export class ItemsPanel extends Phaser.GameObjects.Container {
         scene.add.existing(this);
     }
 }
+
 
 export class CustomFailPanel extends Phaser.GameObjects.Container {
     constructor(scene, x, y, onRestart, onQuit) {

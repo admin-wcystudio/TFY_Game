@@ -205,7 +205,7 @@ export class MainStreetScene extends Phaser.Scene {
         const genderKey = this.genderKey;
 
         const playerPos = localStorage.getItem('playerPosition')
-            ? JSON.parse(localStorage.getItem('playerPosition')) : { x: 1500, y: 400 };
+            ? JSON.parse(localStorage.getItem('playerPosition')) : { x: 5600, y: 520 };
         this.playerPos = playerPos;
 
 
@@ -222,8 +222,8 @@ export class MainStreetScene extends Phaser.Scene {
         this.cameras.main.setBounds(0, 0, this.worldWidth, 1080);
 
         // Foreground overlays (rock/boat + bridge) for depth layering
-        this.object1 = this.add.image(5240, 850, 'object1').setDepth(16);
-        this.object2 = this.add.image(3780, 780, 'object2').setDepth(15).setScale(1.01);
+        // this.object1 = this.add.image(5605, 500, 'object1').setDepth(16).setScale(1);
+        this.object2 = this.add.image(3625, 755, 'object2').setDepth(15).setScale(0.98);
 
         const introPage = [
             {
@@ -298,19 +298,19 @@ export class MainStreetScene extends Phaser.Scene {
         // Fake5 elderly couple | Fake4 digging | Fake3 chicken | Fake2 kids | Fake1 dog
         this.ambientNpcs = [];
         this.ambientNpcs.push(
-            NpcHelper.createCharacter(this, 420, 560, 0.85, 'fakeNpc5', 5, 'fakeNpc5_anim')
+            NpcHelper.createCharacter(this, 720, 340, 0.85, 'fakeNpc5', 5, 'fakeNpc5_anim')
         );
         this.ambientNpcs.push(
-            NpcHelper.createCharacter(this, 980, 640, 0.95, 'fakeNpc4', 6, 'fakeNpc4_anim')
+            NpcHelper.createCharacter(this, 980, 400, 0.85, 'fakeNpc4', 6, 'fakeNpc4_anim')
         );
         this.ambientNpcs.push(
-            NpcHelper.createCharacter(this, 1280, 720, 0.9, 'fakeNpc3', 7, 'fakeNpc3_anim')
+            NpcHelper.createCharacter(this, 980, 620, 0.85, 'fakeNpc3', 7, 'fakeNpc3_anim')
         );
         this.ambientNpcs.push(
-            NpcHelper.createCharacter(this, 2550, 680, 0.9, 'fakeNpc2', 7, 'fakeNpc2_anim')
+            NpcHelper.createCharacter(this, 2130, 630, 0.85, 'fakeNpc2', 15, 'fakeNpc2_anim')
         );
         this.ambientNpcs.push(
-            NpcHelper.createCharacter(this, 3100, 740, 0.85, 'fakeNpc1', 8, 'fakeNpc1_anim')
+            NpcHelper.createCharacter(this, 3100, 580, 0.85, 'fakeNpc1', 8, 'fakeNpc1_anim')
         );
 
         // Interactive NPCs — placed by role to match concept art
@@ -318,12 +318,12 @@ export class MainStreetScene extends Phaser.Scene {
         // → NPC6 flower boy → NPC2 fisherman (bridge) → NPC1 scholar (stone table)
         this.interactiveNpcs = [];
 
-        const n5 = NpcHelper.createNpc(this, 5, 1550, 650, 0.9, 'npc5', npc5_bubbles, 8, 'npc5_anim');
-        const n4 = NpcHelper.createNpc(this, 4, 2200, 650, 0.9, 'npc4', npc4_bubbles, 8, 'npc4_anim');
-        const n3 = NpcHelper.createNpc(this, 3, 2880, 620, 0.9, 'npc3', npc3_bubbles, 8, 'npc3_anim');
-        const n6 = NpcHelper.createNpc(this, 6, 3400, 650, 0.9, 'npc6', npc6_bubbles, 8, 'npc6_anim');
-        const n2 = NpcHelper.createNpc(this, 2, 4000, 650, 0.9, 'npc2', npc2_bubbles, 8, 'npc2_anim');
-        const n1 = NpcHelper.createNpc(this, 1, 4950, 600, 0.9, 'npc1', npc1_bubbles, 8, 'npc1_anim');
+        const n5 = NpcHelper.createNpc(this, 5, 1320, 400, 0.85, 'npc5', npc5_bubbles, 8, 'npc5_anim');
+        const n4 = NpcHelper.createNpc(this, 4, 1900, 450, 0.85, 'npc4', npc4_bubbles, 8, 'npc4_anim');
+        const n3 = NpcHelper.createNpc(this, 3, 2680, 500, 0.85, 'npc3', npc3_bubbles, 8, 'npc3_anim');
+        const n6 = NpcHelper.createNpc(this, 6, 3300, 550, 0.85, 'npc6', npc6_bubbles, 8, 'npc6_anim');
+        const n2 = NpcHelper.createNpc(this, 2, 4100, 450, 0.85, 'npc2', npc2_bubbles, 8, 'npc2_anim');
+        const n1 = NpcHelper.createNpc(this, 1, 5950, 450, 0.85, 'npc1', npc1_bubbles, 8, 'npc1_anim');
 
         this.interactiveNpcs.push(n1, n2, n3, n4, n5, n6);
 
@@ -342,7 +342,7 @@ export class MainStreetScene extends Phaser.Scene {
 
 
         this.playerSprite = this.add.sprite(playerPos.x, playerPos.y,
-            `${genderKey}_idle`).setDepth(14).setScale(2);
+            `${genderKey}_idle`).setDepth(14).setScale(1.5);
 
         this.playerSprite.anims.play(`${genderKey}_idle_anim`);
 
@@ -370,7 +370,7 @@ export class MainStreetScene extends Phaser.Scene {
         }
         this.playerSprite.lastDirectionLeft = isLeft;
 
-        this.playerSprite.x = Phaser.Math.Clamp(this.playerSprite.x, 100, this.worldWidth - 200);
+        this.playerSprite.x = Phaser.Math.Clamp(this.playerSprite.x, 1000, this.worldWidth - 200);
 
 
         const allNpcs = [...this.interactiveNpcs];

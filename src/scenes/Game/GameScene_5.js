@@ -15,10 +15,9 @@ export class GameScene_5 extends BaseGameScene {
         this.centerX = this.width / 2;
         this.centerY = this.height / 2;
 
-        this.load.image('game5_npc_box_mainstreet', `${path}game5_npc_box1.png`);
-        this.load.image('game5_npc_box_intro', `${path}game5_npc_box2.png`);
-        this.load.image('game5_npc_box_win', `${path}game5_npc_box3.png`);
-        this.load.image('game5_npc_box_tryagain', `${path}game5_npc_box4.png`);
+        this.load.image('game5_npc_box_mainstreet', `${path}game5_npc_box3.png`);
+        this.load.image('game5_npc_box_win', `${path}game5_npc_box4.png`);
+        this.load.image('game5_npc_box_tryagain', `${path}game5_npc_box5.png`);
         this.load.image('game5_rotate', `${path}game5_rotate.png`);
         this.load.image('game5_object_description', `${path}game5_object_description.png`);
 
@@ -32,28 +31,17 @@ export class GameScene_5 extends BaseGameScene {
         if (localStorage.getItem('player')) {
             this.gender = JSON.parse(localStorage.getItem('player')).gender;
         }
-
-        this.load.spritesheet('game5_success_preview',
-            `${path}game5_success_preview.png`, {
-            frameWidth: 164.5,
-            frameHeight: 230
-        });
+        this.load.image('game5_finish_preview', `${path}game5_finish_preview.png`);
 
     }
 
     create() {
-        this.initGame('game5_bg', 'game5_description', false, false, {
+        this.initGame('game5_bg', 'game5_description', true, false, {
             targetRounds: 1,
             roundPerSeconds: 60,
             isAllowRoundFail: false,
             isContinuousTimer: true,
             sceneIndex: 5
-        });
-        this.anims.create({
-            key: 'success_preview_anim',
-            frames: this.anims.generateFrameNumbers('game5_success_preview', { start: 0, end: 48 }),
-            framerate: 30,
-            repeat: -1
         });
 
     }
@@ -213,35 +201,21 @@ export class GameScene_5 extends BaseGameScene {
         }
     }
 
-    onRoundWin() {
-        if (!this.isGameActive || this.gameState === 'gameWin') return;
-
-        let isFinalWin = (this.roundIndex + 1 >= this.targetRounds) || this.isAllowRoundFail;
-        this.gameState = isFinalWin ? 'gameWin' : 'roundWin';
-
-        this.gameTimer.stop();
-        this._calculateTiming(isFinalWin);
+    onWinBubbleClose() {
         this.enableGameInteraction(false);
-        this.updateRoundUI(true);
+        super.onWinBubbleClose();
+        const finishPreview = this.add.image(this.centerX, this.centerY, 'game5_finish_preview')
+            .setDepth(1000).setInteractive({ useHandCursor: true }).setScale(1.2);
+        finishPreview.on('pointerdown', () => {
+            finishPreview.destroy();
 
-        // Feedback Visuals
-        this.showFeedbackLabel(true);
-        this.showBubble('win', this.playerGender);
-        this.playFeedback();
+            this.time.delayedCall(
+                1000, () => {
+                    this.showObjectPanel();
+                });
+        });
     }
 
-    playFeedback() {
-        this.puzzleGroup.setVisible(false);
-        if (this.successVideo) this.successVideo.destroy();
-
-        this.previewSprite = this.add.sprite(960, 440,
-            'game5_success_preview').setDepth(1000).setScale(2);
-        this.previewSprite.play('success_preview_anim');
-    }
-
-    showWin() {
-        this.showObjectPanel();
-    }
 
     showObjectPanel() {
         const objectPanel = new CustomPanel(this, 960, 600, [{

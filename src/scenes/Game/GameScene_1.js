@@ -300,7 +300,7 @@ export class GameScene_1 extends BaseGameScene {
     }
 
     onWinBubbleClose() {
-        GameManager.saveGameResult(6, true, this.totalUsedSeconds);
+        GameManager.saveGameResult(1, true, this.totalUsedSeconds);
 
         this.objects.forEach(obj => obj.setVisible(false));
         if (this.confirmBtn) this.confirmBtn.setVisible(false);

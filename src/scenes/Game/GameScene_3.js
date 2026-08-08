@@ -327,7 +327,8 @@ export class GameScene_3 extends BaseGameScene {
 
 
     onWinBubbleClose() {
-        const centerX = this.cameras.main.width / 2;
+        GameManager.saveGameResult(3, true, this.totalUsedSeconds);
+        super.onWinBubbleClose();
 
         this.nextDialog = this.add.image(this.centerX, this.cameras.main.height * 0.8, 'game3_npc_box_win1').setDepth(1000);
         this.nextDialog.setInteractive({ useHandCursor: true });

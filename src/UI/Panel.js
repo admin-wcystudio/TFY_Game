@@ -253,7 +253,6 @@ export class ItemsPanel extends Phaser.GameObjects.Container {
                 itemSelectKey: 'itempage_item2_select',
                 itemDescriptionKey: 'game2_object_description'
             },
-
             {
                 itemKey: 'itempage_item3',
                 itemSelectKey: 'itempage_item3_select',

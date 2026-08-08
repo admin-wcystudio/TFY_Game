@@ -205,7 +205,7 @@ export class MainStreetScene extends Phaser.Scene {
         const genderKey = this.genderKey;
 
         const playerPos = localStorage.getItem('playerPosition')
-            ? JSON.parse(localStorage.getItem('playerPosition')) : { x: 5600, y: 520 };
+            ? JSON.parse(localStorage.getItem('playerPosition')) : { x: 2600, y: 520 };
         this.playerPos = playerPos;
 
 
@@ -222,7 +222,7 @@ export class MainStreetScene extends Phaser.Scene {
         this.cameras.main.setBounds(0, 0, this.worldWidth, 1080);
 
         // Foreground overlays (rock/boat + bridge) for depth layering
-        // this.object1 = this.add.image(5605, 500, 'object1').setDepth(16).setScale(1);
+        this.object1 = this.add.image(5605, 500, 'object1').setDepth(16).setScale(1);
         this.object2 = this.add.image(3625, 755, 'object2').setDepth(15).setScale(0.98);
 
         const introPage = [

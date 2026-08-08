@@ -81,24 +81,24 @@ export class MainStreetScene extends Phaser.Scene {
 
         this.load.image('gameintro', 'assets/images/MainStreet/gameintro.png');
 
-        this.load.image('npc1_bubble_1', 'assets/images/Game_1/game1_npc_box1.png');
-        this.load.image('npc2_bubble_1', 'assets/images/Game_2/game2_npc_box1.png');
-        this.load.image('npc3_bubble_1', 'assets/images/Game_3/game3_npc_box1.png');
+        this.load.image('npc1_bubble_reject', 'assets/images/Game_7/game7_npc_box1.png');
+        this.load.image('npc1_bubble_reject_02', 'assets/images/Game_7/game7_npc_box2.png');
+        this.load.image('npc1_bubble_1', 'assets/images/Game_7/game7_npc_box3.png');
 
-        this.load.image('npc4_bubble_reject', 'assets/images/Game_4/game4_npc_box1.png');
-        this.load.image('npc4_bubble_reject_02', 'assets/images/Game_4/game4_npc_box2.png');
-        this.load.image('npc4_bubble_1', 'assets/images/Game_4/game4_npc_box3.png');
+        this.load.image('npc2_bubble_reject', 'assets/images/Game_5/game5_npc_box1.png');
+        this.load.image('npc2_bubble_reject_02', 'assets/images/Game_5/game5_npc_box2.png');
+        this.load.image('npc2_bubble_1', 'assets/images/Game_5/game5_npc_box3.png');
 
-        this.load.image('npc5_bubble_1', 'assets/images/Game_5/game5_npc_box3.png');
+        this.load.image('npc3_bubble_1', 'assets/images/Game_1/game1_npc_box1.png');
 
-        this.load.image('npc5_bubble_reject', 'assets/images/Game_5/game5_npc_box1.png');
-        this.load.image('npc5_bubble_reject_02', 'assets/images/Game_5/game5_npc_box2.png');
+        this.load.image('npc4_bubble_1', 'assets/images/Game_4/game4_npc_box1.png');
 
-        this.load.image('npc6_bubble_1', 'assets/images/Game_6/game6_npc_box3.png');
-        this.load.image('npc6_bubble_2', 'assets/images/Game_6/game6_npc_box4.png');
+        this.load.image('npc5_bubble_1', 'assets/images/Game_2/game2_npc_box3.png');
 
-        this.load.image('npc6_bubble_reject', 'assets/images/Game_6/game6_npc_box1.png');
-        this.load.image('npc6_bubble_reject_02', 'assets/images/Game_6/game6_npc_box2.png');
+        this.load.image('npc6_bubble_1', 'assets/images/Game_3/game3_npc_box3.png');
+        this.load.image('npc6_bubble_2', 'assets/images/Game_3/game3_npc_box4.png');
+
+        this.load.image('npc6_bubble_reject', 'assets/images/Game_3/game3_npc_box1.png');
 
         this.load.image('npc7_bubble_reject', 'assets/images/Game_7/game7_npc_box1.png');
         this.load.image('npc7_bubble_reject_02', 'assets/images/Game_7/game7_npc_box2.png');
@@ -329,7 +329,7 @@ export class MainStreetScene extends Phaser.Scene {
 
         this.currentInteractiveNpc = null;
 
-        const npcGameMap = { 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6 };
+        const npcGameMap = { 1: 7, 2: 5, 3: 1, 4: 4, 5: 2, 6: 3 };
         this.interactiveNpcs.forEach((npc, index) => {
             npc.on('pointerdown', () => {
                 if (npc.canInteract) {

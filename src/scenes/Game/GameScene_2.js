@@ -1,7 +1,7 @@
 
 import BaseGameScene from './BaseGameScene.js';
 import { CustomButton } from '../../UI/Button.js';
-import { CustomPanel, CustomFailPanel, QuestionPanel } from '../../UI/Panel.js';
+import { CustomPanel, CustomFailPanel, QuestionPanel, QuestionPanel_2 } from '../../UI/Panel.js';
 import GameManager from '../GameManager.js';
 
 export class GameScene_2 extends BaseGameScene {
@@ -102,7 +102,7 @@ export class GameScene_2 extends BaseGameScene {
 
         const selectedQuestions = Phaser.Utils.Array.Shuffle([...allQuestions]).slice(0, 3);
 
-        this.questionPanel = new QuestionPanel(this, selectedQuestions, questionTitles, () => {
+        this.questionPanel = new QuestionPanel_2(this, selectedQuestions, questionTitles, () => {
         });
         this.questionPanel.setDepth(559).setVisible(false);
     }

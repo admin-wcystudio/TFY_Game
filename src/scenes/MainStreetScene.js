@@ -75,7 +75,7 @@ export class MainStreetScene extends Phaser.Scene {
         this.load.image('stage3', 'assets/images/MainStreet/stage_stage3.png');
         this.load.image('stage4', 'assets/images/MainStreet/stage_stage4.png');
 
-        for (let i = 1; i <= 2; i++) {
+        for (let i = 1; i <= 3; i++) {
             this.load.image(`object${i}`, `assets/images/MainStreet/stage_object${i}.png`);
         }
 
@@ -205,7 +205,7 @@ export class MainStreetScene extends Phaser.Scene {
         const genderKey = this.genderKey;
 
         const playerPos = localStorage.getItem('playerPosition')
-            ? JSON.parse(localStorage.getItem('playerPosition')) : { x: 2600, y: 520 };
+            ? JSON.parse(localStorage.getItem('playerPosition')) : { x: 1600, y: 520 };
         this.playerPos = playerPos;
 
 
@@ -222,8 +222,9 @@ export class MainStreetScene extends Phaser.Scene {
         this.cameras.main.setBounds(0, 0, this.worldWidth, 1080);
 
         // Foreground overlays (rock/boat + bridge) for depth layering
-        this.object1 = this.add.image(5605, 500, 'object1').setDepth(16).setScale(1);
+        this.object1 = this.add.image(4945, 515, 'object1').setDepth(16).setScale(1.05);
         this.object2 = this.add.image(3625, 755, 'object2').setDepth(15).setScale(0.98);
+        this.object3 = this.add.image(1465, 700, 'object3').setDepth(15).setScale(1);
 
         const introPage = [
             {
@@ -370,7 +371,7 @@ export class MainStreetScene extends Phaser.Scene {
         }
         this.playerSprite.lastDirectionLeft = isLeft;
 
-        this.playerSprite.x = Phaser.Math.Clamp(this.playerSprite.x, 1000, this.worldWidth - 200);
+        this.playerSprite.x = Phaser.Math.Clamp(this.playerSprite.x, 1300, this.worldWidth - 300);
 
 
         const allNpcs = [...this.interactiveNpcs];

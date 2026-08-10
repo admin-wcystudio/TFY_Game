@@ -225,7 +225,7 @@ export class GameScene_5 extends BaseGameScene {
         }]);
         objectPanel.setDepth(1000);
         objectPanel.show();
-        objectPanel.setCloseCallBack(() => GameManager.switchScene(this, 'GameScene_6'));
+        objectPanel.setCloseCallBack(() => GameManager.switchToGameScene(this, 'GameScene_6'));
     }
 
 

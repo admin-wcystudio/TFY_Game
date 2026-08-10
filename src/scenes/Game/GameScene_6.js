@@ -154,9 +154,9 @@ export class GameScene_6 extends BaseGameScene {
             closeBtn: 'close_btn',
             closeBtnClick: 'close_btn_click'
         }]);
-        objectPanel.closeBtn.setVisible(false); // 先隱藏關閉按鈕
-        objectPanel.setDepth(802);
+        objectPanel.setDepth(1000);
         objectPanel.show();
+        objectPanel.setCloseCallBack(() => GameManager.backToMainStreet(this));
     }
 
 

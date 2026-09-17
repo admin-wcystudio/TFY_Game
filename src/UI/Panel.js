@@ -612,7 +612,7 @@ export class QuestionPanel_2 extends Phaser.GameObjects.Container {
                 () => {
                     this.selectedAnswer(btn, index);
                 });
-            btn.isClicked = true;
+            btn.needClicked = true;
 
             this.add(btn); // 加入 Container
             this.optionButtons.push(btn); // 加入陣列追蹤
@@ -625,7 +625,11 @@ export class QuestionPanel_2 extends Phaser.GameObjects.Container {
         console.log(`Selected option index: ${index}`);
     }
     selectedAnswer(gameObject, index) {
-        this.optionButtons.forEach(btn => { btn.isClicked = false; btn.setNormalState(); });
+        this.optionButtons.forEach(btn => {
+            btn.isClicked = false;
+            btn.setNormalState();
+            btn.clearTint();
+        });
         gameObject.isClicked = true;
         gameObject.setPressedState();
         this.selectedAnswerIndex = index;

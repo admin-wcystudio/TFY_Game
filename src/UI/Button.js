@@ -62,7 +62,7 @@ class BaseButton extends Phaser.GameObjects.Image {
     handleUp() {
         if (this.locked || !this.input?.enabled) return;
         this.isHeldDown = false;
-        if (!this.needClicked) {
+        if (!this.needClicked && !this.isClicked) {
             this.setNormalState();
             this.cbUp();
         }

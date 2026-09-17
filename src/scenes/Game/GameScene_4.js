@@ -83,6 +83,9 @@ export class GameScene_4 extends BaseGameScene {
             this.load.spritesheet('girl_backwalking', path +
                 'game4_girl_backwalking.png', { frameWidth: 105, frameHeight: 105 });
 
+            this.load.spritesheet('girl_frontstop', path +
+                'game4_girl_frontstop.png', { frameWidth: 105, frameHeight: 105 });
+
             this.load.spritesheet('girl_frontwalking', path +
                 'game4_girl_frontwalking.png', { frameWidth: 105, frameHeight: 105 });
 
@@ -142,8 +145,8 @@ export class GameScene_4 extends BaseGameScene {
         this.genderKey = this.gender === 'M' ? 'boy' : 'girl';
         //  console.log('genderKey:', this.genderKey);
 
-        // Use frontstop for boy, frontwalking for girl (girl_frontstop doesn't exist)
-        const idleKey = this.gender === 'M' ? 'frontstop' : 'frontwalking';
+        // Use front-facing idle for both genders
+        const idleKey = 'frontstop';
         this.idleAnimKey = `${this.genderKey}_${idleKey}_anim`;
         this.lastDirection = 'down';
 
@@ -275,9 +278,7 @@ export class GameScene_4 extends BaseGameScene {
             case 'down':
                 targetY += this.moveStep;
                 walkAnimKey = `${this.genderKey}_frontwalking_anim`;
-                stopAnimKey = this.gender === 'M'
-                    ? `${this.genderKey}_frontstop_anim`
-                    : `${this.genderKey}_frontwalking_anim`;
+                stopAnimKey = `${this.genderKey}_frontstop_anim`;
                 break;
         }
 
@@ -542,102 +543,31 @@ export class GameScene_4 extends BaseGameScene {
 
 
     createAnimations() {
+        const addLoop = (key, textureKey, start = 0, end = null) => {
+            if (!this.textures.exists(textureKey)) return;
+            if (this.anims.exists(key)) this.anims.remove(key);
+            const lastFrame = end ?? Math.max(0, this.textures.get(textureKey).frameTotal - 2);
+            this.anims.create({
+                key,
+                frames: this.anims.generateFrameNumbers(textureKey, { start, end: lastFrame }),
+                frameRate: 24,
+                repeat: -1
+            });
+        };
 
-        if (this.gender === 'M') {
-            // Boy animations
-            this.anims.create({
-                key: 'boy_backstop_anim',
-                frames: this.anims.generateFrameNumbers('boy_backstop', { start: 0, end: 47 }),
-                frameRate: 30,
-                repeat: -1
-            });
-            this.anims.create({
-                key: 'boy_backwalking_anim',
-                frames: this.anims.generateFrameNumbers('boy_backwalking', { start: 0, end: 66 }),
-                frameRate: 30,
-                repeat: -1
-            });
-            this.anims.create({
-                key: 'boy_frontstop_anim',
-                frames: this.anims.generateFrameNumbers('boy_frontstop', { start: 0, end: 47 }),
-                frameRate: 30,
-                repeat: -1
-            });
-            this.anims.create({
-                key: 'boy_frontwalking_anim',
-                frames: this.anims.generateFrameNumbers('boy_frontwalking', { start: 0, end: 47 }),
-                frameRate: 30,
-                repeat: -1
-            });
-            this.anims.create({
-                key: 'boy_leftstop_anim',
-                frames: this.anims.generateFrameNumbers('boy_leftstop', { start: 0, end: 47 }),
-                frameRate: 30,
-                repeat: -1
-            });
-            this.anims.create({
-                key: 'boy_leftwalking_anim',
-                frames: this.anims.generateFrameNumbers('boy_leftwalking', { start: 0, end: 66 }),
-                frameRate: 30,
-                repeat: -1
-            });
-            this.anims.create({
-                key: 'boy_rightstop_anim',
-                frames: this.anims.generateFrameNumbers('boy_rightstop', { start: 0, end: 47 }),
-                frameRate: 30,
-                repeat: -1
-            });
-            this.anims.create({
-                key: 'boy_rightwalking_anim',
-                frames: this.anims.generateFrameNumbers('boy_rightwalking', { start: 0, end: 66 }),
-                frameRate: 30,
-                repeat: -1
-            });
-        } else {
-
-            // Girl animations
-            this.anims.create({
-                key: 'girl_backstop_anim',
-                frames: this.anims.generateFrameNumbers('girl_backstop', { start: 0, end: 66 }),
-                frameRate: 30,
-                repeat: -1
-            });
-            this.anims.create({
-                key: 'girl_backwalking_anim',
-                frames: this.anims.generateFrameNumbers('girl_backwalking', { start: 0, end: 66 }),
-                frameRate: 30,
-                repeat: -1
-            });
-            this.anims.create({
-                key: 'girl_frontwalking_anim',
-                frames: this.anims.generateFrameNumbers('girl_frontwalking', { start: 0, end: 66 }),
-                frameRate: 30,
-                repeat: -1
-            });
-            this.anims.create({
-                key: 'girl_leftstop_anim',
-                frames: this.anims.generateFrameNumbers('girl_leftstop', { start: 0, end: 66 }),
-                frameRate: 30,
-                repeat: -1
-            });
-            this.anims.create({
-                key: 'girl_leftwalking_anim',
-                frames: this.anims.generateFrameNumbers('girl_leftwalking', { start: 0, end: 66 }),
-                frameRate: 30,
-                repeat: -1
-            });
-            this.anims.create({
-                key: 'girl_rightstop_anim',
-                frames: this.anims.generateFrameNumbers('girl_rightstop', { start: 0, end: 66 }),
-                frameRate: 30,
-                repeat: -1
-            });
-            this.anims.create({
-                key: 'girl_rightwalking_anim',
-                frames: this.anims.generateFrameNumbers('girl_rightwalking', { start: 16, end: 47 }),
-                frameRate: 30,
-                repeat: -1
-            });
-        }
+        const prefix = this.gender === 'M' ? 'boy' : 'girl';
+        [
+            'backstop', 'backwalking',
+            'frontstop', 'frontwalking',
+            'leftstop', 'leftwalking',
+            'rightstop', 'rightwalking'
+        ].forEach((name) => {
+            // Girl right-walk sheet has a broken gap; use the marked cycle only.
+            if (prefix === 'girl' && name === 'rightwalking') {
+                addLoop(`${prefix}_${name}_anim`, `${prefix}_${name}`, 12, 23);
+                return;
+            }
+            addLoop(`${prefix}_${name}_anim`, `${prefix}_${name}`);
+        });
     }
 }

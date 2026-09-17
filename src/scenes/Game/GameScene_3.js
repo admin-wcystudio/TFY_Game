@@ -12,7 +12,6 @@ export class GameScene_3 extends BaseGameScene {
         const path = 'assets/images/Game_3/';
 
         this.load.image('game3_npc_box_win', `${path}game3_npc_box2.png`);
-        this.load.image('game3_npc_box_win1', `${path}game3_npc_box3.png`);
         this.load.image('game3_npc_box_tryagain', `${path}game3_npc_box4.png`);
 
         // Buttons
@@ -325,17 +324,8 @@ export class GameScene_3 extends BaseGameScene {
         this.updateRoundUI(true);
     }
 
-
-    onWinBubbleClose() {
-        GameManager.saveGameResult(3, true, this.totalUsedSeconds);
-        super.onWinBubbleClose();
-
-        this.nextDialog = this.add.image(this.centerX, this.cameras.main.height * 0.8, 'game3_npc_box_win1').setDepth(1000);
-        this.nextDialog.setInteractive({ useHandCursor: true });
-        this.nextDialog.once('pointerdown', () => {
-            this.nextDialog.destroy();
-            this.showObjectPanel();
-        });
+    showWin() {
+        this.showObjectPanel();
     }
 
     showObjectPanel() {

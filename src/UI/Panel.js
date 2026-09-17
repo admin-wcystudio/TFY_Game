@@ -1,4 +1,5 @@
 import { CustomButton, CustomButton2 } from './Button.js';
+import VoiceOverHelper from '../Audio/VoiceOverHelper.js';
 /**
  * BASE PANEL CLASS
  * Provides common functionality for all game overlays
@@ -201,6 +202,11 @@ export class SettingPanel extends Phaser.GameObjects.Container {
         if (this.currentLanguage === lang) return; // Skip if no change
         this.currentLanguage = lang;
         this.refreshLanguageUI();
+        localStorage.setItem('gameSettings', JSON.stringify({
+            volume: this.currentVolume,
+            language: this.currentLanguage
+        }));
+        VoiceOverHelper.replayCurrent(this.scene);
     }
 
     refreshLanguageUI() {
@@ -221,6 +227,7 @@ export class SettingPanel extends Phaser.GameObjects.Container {
             language: this.currentLanguage
         };
         localStorage.setItem('gameSettings', JSON.stringify(settings));
+        VoiceOverHelper.replayCurrent(this.scene);
         this.hide();
     }
 
@@ -476,12 +483,15 @@ export class QuestionPanel extends Phaser.GameObjects.Container {
 
             const dialogImage = this.scene.add.image(centerX, centerY, dialogKeys[dialogIndex])
                 .setDepth(801).setInteractive({ useHandCursor: true }).setVisible(true);
+            VoiceOverHelper.playBubbleVo(this.scene, dialogKeys[dialogIndex]);
 
             const advance = () => {
                 dialogIndex++;
                 if (dialogIndex < dialogKeys.length) {
                     dialogImage.setTexture(dialogKeys[dialogIndex]);
+                    VoiceOverHelper.playBubbleVo(this.scene, dialogKeys[dialogIndex]);
                 } else {
+                    VoiceOverHelper.stop(this.scene);
                     dialogImage.destroy();
                     this.nextQuestion();
                 }
@@ -521,6 +531,7 @@ export class QuestionPanel extends Phaser.GameObjects.Container {
     }
 
     destroy() {
+        VoiceOverHelper.stop(this.scene);
         if (this.dialogVideo) {
             this.dialogVideo.destroy();
             this.dialogVideo = null;

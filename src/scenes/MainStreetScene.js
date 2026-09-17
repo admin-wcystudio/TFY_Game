@@ -3,6 +3,7 @@ import UIHelper from '../UI/UIHelper.js';
 import { CustomPanel, SettingPanel } from '../UI/Panel.js';
 import NpcHelper from '../Character/NpcHelper.js';
 import GameManager from './GameManager.js';
+import VoiceOverHelper from '../Audio/VoiceOverHelper.js';
 
 export class MainStreetScene extends Phaser.Scene {
     constructor() {
@@ -69,6 +70,7 @@ export class MainStreetScene extends Phaser.Scene {
         });
 
         this.load.audio('bgm', 'assets/music/bgm.mp3');
+        VoiceOverHelper.preload(this);
         //main street backgrounds
         this.load.image('stage1', 'assets/images/MainStreet/stage_stage1.png');
         this.load.image('stage2', 'assets/images/MainStreet/stage_stage2.png');
@@ -93,10 +95,10 @@ export class MainStreetScene extends Phaser.Scene {
 
         this.load.image('npc4_bubble_1', 'assets/images/Game_4/game4_npc_box1.png');
 
-        this.load.image('npc5_bubble_1', 'assets/images/Game_2/game2_npc_box3.png');
+        this.load.image('npc5_bubble_1', 'assets/images/Game_2/game2_npc_box1.png');
 
-        this.load.image('npc6_bubble_1', 'assets/images/Game_3/game3_npc_box3.png');
-        this.load.image('npc6_bubble_2', 'assets/images/Game_3/game3_npc_box4.png');
+        this.load.image('npc6_bubble_1', 'assets/images/Game_3/game3_npc_box1.png');
+        this.load.image('npc6_bubble_2', 'assets/images/Game_3/game3_npc_box3.png');
 
         this.load.image('npc6_bubble_reject', 'assets/images/Game_3/game3_npc_box1.png');
 
@@ -181,9 +183,8 @@ export class MainStreetScene extends Phaser.Scene {
     }
 
     create() {
-        if (this.sound.getAll('bgm').length === 0) {
-            this.sound.play('bgm', { loop: true, volume: 0.5 });
-        }
+        this.events.once('shutdown', () => VoiceOverHelper.stop(this));
+        VoiceOverHelper.ensureBgm(this);
 
         this.input.on('pointerup', () => {
             this.isLeftDown = false;
@@ -335,8 +336,10 @@ export class MainStreetScene extends Phaser.Scene {
             npc.on('pointerdown', () => {
                 if (npc.canInteract) {
                     const gameNumber = npcGameMap[npc.id] ?? (index + 1);
-                    const sceneKey = `GameScene_${gameNumber}`;
-                    this.loadBubble(0, npc.bubbles, sceneKey, npc);
+                    const locked = !VoiceOverHelper.arePrereqsMet(gameNumber);
+                    const lines = VoiceOverHelper.getStreetLines(gameNumber, locked);
+                    const sceneKey = locked ? null : `GameScene_${gameNumber}`;
+                    this.loadBubble(0, lines.length ? lines : npc.bubbles, sceneKey, npc);
                 }
             });
         });
@@ -398,6 +401,7 @@ export class MainStreetScene extends Phaser.Scene {
                 this.bubbleTimers = [];
 
                 // 2. Destroy NPC Bubble
+                VoiceOverHelper.stop(this);
                 if (this.currentActiveBubble) {
                     this.currentActiveBubble.destroy();
                     this.currentActiveBubble = null;
@@ -476,6 +480,7 @@ export class MainStreetScene extends Phaser.Scene {
         // 綁定當前 NPC 到對話框，方便 update 檢查距離
         this.bubbleImg.ownerNpc = targetNpc;
         this.currentActiveBubble = this.bubbleImg;
+        VoiceOverHelper.playBubbleVo(this, bubbles[index]);
 
         this.switchTalkingAnimation(this.genderKey, targetNpc.x < this.playerSprite.x);
 
@@ -491,6 +496,7 @@ export class MainStreetScene extends Phaser.Scene {
 
             this.time.delayedCall(500, () => {
                 if (sceneKey && targetNpc.canInteract) {
+                    VoiceOverHelper.stop(this);
                     localStorage.setItem('playerPosition', JSON.stringify({ x: this.playerSprite.x, y: this.playerSprite.y }));
                     GameManager.switchToGameScene(this, sceneKey);
                 }

@@ -2,6 +2,7 @@ import BaseGameScene from './BaseGameScene.js';
 import { CustomButton } from '../../UI/Button.js';
 import { CustomPanel, CustomFailPanel } from '../../UI/Panel.js';
 import GameManager from '../GameManager.js';
+import VoiceOverHelper from '../../Audio/VoiceOverHelper.js';
 
 export class GameScene_4 extends BaseGameScene {
     constructor() {
@@ -501,7 +502,9 @@ export class GameScene_4 extends BaseGameScene {
 
         this.win_02 = this.add.image(centerX, centerY, 'game4_npc_box_win_01')
             .setInteractive({ useHandCursor: true }).setDepth(566).setVisible(true);
+        VoiceOverHelper.playBubbleVo(this, 'game4_npc_box_win_01');
         this.win_02.once('pointerdown', () => {
+            VoiceOverHelper.stop(this);
             this.win_02.destroy();
             this.win_02 = null;
             super.onWinBubbleClose();

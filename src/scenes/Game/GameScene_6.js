@@ -64,10 +64,6 @@ export class GameScene_6 extends BaseGameScene {
 
     create() {
 
-        if (this.sound.getAll('bgm').length === 0) {
-            this.sound.play('bgm', { loop: true, volume: 0.5 });
-        }
-
         // Pass null for bgKey since using video background
         this.initGame('game6_bg', 'game6_description', true, false, {
             targetRounds: 3,

@@ -71,11 +71,15 @@ export default class VoiceOverHelper {
         'Game_5/game5_npc_box5',
         'Game_6/game6_npc_box1',
         'Game_6/game6_npc_box2_boy',
+        'Game_6/game6_npc_box2_girl',
         'Game_6/game6_npc_box3',
         'Game_6/game6_npc_box4_boy',
+        'Game_6/game6_npc_box4_girl',
         'Game_6/game6_npc_box5',
         'Game_6/game6_npc_box6_boy',
+        'Game_6/game6_npc_box6_girl',
         'Game_6/game6_npc_box7_boy',
+        'Game_6/game6_npc_box7_girl',
         'Game_6/game6_npc_box8',
         'Game_6/game6_npc_box9',
         'Game_7/game7_npc_box1',
@@ -194,23 +198,34 @@ export default class VoiceOverHelper {
         VoiceOverHelper.playBubbleVo(scene, key);
     }
 
-    static getGenderTag() {
-        try {
-            const player = JSON.parse(localStorage.getItem('player') || '{}');
-            return player.gender === 'F' ? 'girl' : 'boy';
-        } catch (e) {
-            return 'boy';
+    static getGenderTag(scene) {
+        let gender = scene?.gender || scene?.playerGender;
+        if (!gender) {
+            try {
+                gender = JSON.parse(localStorage.getItem('player') || '{}').gender;
+            } catch (e) {
+                gender = 'F';
+            }
         }
+        const value = String(gender || 'F').toUpperCase();
+        return (value === 'M' || value === 'BOY' || value === 'MALE') ? 'boy' : 'girl';
     }
 
-    static boxBaseFromBubbleKey(bubbleKey) {
+    static boxBaseFromBubbleKey(bubbleKey, scene) {
         if (!bubbleKey) return null;
-        if (VoiceOverHelper.SEMANTIC_TO_BOX[bubbleKey]) {
-            return VoiceOverHelper.SEMANTIC_TO_BOX[bubbleKey];
+
+        const semantic = VoiceOverHelper.SEMANTIC_TO_BOX[bubbleKey];
+        if (semantic) {
+            // Game 6 character lines are gendered. Keep the on-screen gender in the key
+            // so a girl bubble cannot resolve to the boy recording.
+            if (/^game6_npc_box[2467]$/.test(semantic)) {
+                return `${semantic}_${VoiceOverHelper.getGenderTag(scene)}`;
+            }
+            return semantic;
         }
 
-        const genderedBox = /^(game\d+_npc_box\d+)_(?:boy|girl)$/.exec(bubbleKey);
-        if (genderedBox) return genderedBox[1];
+        const genderedBox = /^(game\d+_npc_box\d+)_(boy|girl)$/.exec(bubbleKey);
+        if (genderedBox) return `${genderedBox[1]}_${genderedBox[2]}`;
         if (/^game\d+_npc_box\d+$/.test(bubbleKey)) return bubbleKey;
 
         const match = /^npc(\d+)_bubble_(\d+)$/.exec(bubbleKey);
@@ -224,11 +239,16 @@ export default class VoiceOverHelper {
     static resolveKey(scene, boxBase) {
         if (!boxBase) return null;
         const lang = VoiceOverHelper.getLanguageSuffix();
-        const genderTag = VoiceOverHelper.getGenderTag();
+
+        // Already gendered (game6_npc_box2_girl): play that file only.
+        if (/_npc_box\d+_(boy|girl)$/.test(boxBase)) {
+            const key = `${boxBase}_${lang}`;
+            return scene.cache.audio.exists(key) ? key : null;
+        }
+
+        const genderTag = VoiceOverHelper.getGenderTag(scene);
         const candidates = [
             `${boxBase}_${genderTag}_${lang}`,
-            `${boxBase}_boy_${lang}`,
-            `${boxBase}_girl_${lang}`,
             `${boxBase}_${lang}`
         ];
         return candidates.find((key) => scene.cache.audio.exists(key)) || null;
@@ -305,6 +325,7 @@ export default class VoiceOverHelper {
     }
 
     static stop(scene, options = {}) {
+        if (!scene) return;
         const restoreBgm = options.restoreBgm !== false;
         if (scene.currentVoTween) {
             scene.currentVoTween.stop();
@@ -324,7 +345,7 @@ export default class VoiceOverHelper {
     static playBubbleVo(scene, bubbleKey) {
         VoiceOverHelper.stop(scene, { restoreBgm: false, clearKey: false });
         VoiceOverHelper.currentBubbleKey = bubbleKey || null;
-        const boxBase = VoiceOverHelper.boxBaseFromBubbleKey(bubbleKey);
+        const boxBase = VoiceOverHelper.boxBaseFromBubbleKey(bubbleKey, scene);
         if (!boxBase) {
             VoiceOverHelper.restoreBgm(scene);
             return;

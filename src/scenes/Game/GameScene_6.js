@@ -127,6 +127,7 @@ export class GameScene_6 extends BaseGameScene {
     resetForNewRound() {
         if (this.questionPanel) {
             this.questionPanel.destroy();
+            this.questionPanel = null;
         }
 
         if (this.dialogVideo) {
@@ -134,8 +135,8 @@ export class GameScene_6 extends BaseGameScene {
             this.dialogVideo = null;
         }
 
-        this.setupGameObjects(); // 重新抽題並建立 Panel
-        this.questionPanel.setVisible(true);
+        this.setupGameObjects();
+        if (this.questionPanel) this.questionPanel.setVisible(false);
     }
 
 
@@ -175,14 +176,23 @@ export class GameScene_6 extends BaseGameScene {
     }
 
     showFailPanel() {
-        // 確保這是在所有東西的最上層
+        // Clean up talk video / question UI so fail panel is clickable
+        if (this.questionPanel) {
+            if (this.questionPanel.dialogVideo) {
+                this.questionPanel.dialogVideo.stop();
+                this.questionPanel.dialogVideo.destroy();
+                this.questionPanel.dialogVideo = null;
+            }
+            this.questionPanel.setVisible(false);
+        }
+
         const popupPanel = new CustomFailPanel(this, 960, 540, () => {
             popupPanel.destroy();
-            this.restartGame(); // 重新開始整個遊戲
+            this.restartGame();
         }, () => {
             GameManager.backToMainStreet(this);
         });
-        popupPanel.setDepth(1000);
+        popupPanel.setDepth(2000);
     }
 
 }
